@@ -1,3 +1,14 @@
+# Custom
+anim/
+*.npy
+data/
+*.csv
+.DS_Store
+.vscode/
+
+# Custom specific
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
