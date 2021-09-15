@@ -22,6 +22,7 @@ class Product:
     TEMPPERP = "tempperp"
     TEMPPARA = "temppara"
     BULKV = "bulkv"
+    R_GSE = "r_gse"
 
 
 class Instrument:
@@ -72,8 +73,12 @@ def download_data(
                 data_rate=data_rate,
                 level="l2",
             )
-            data = data_quants["mms1_fgm_b_gse_brst_l2"].values
-            time = data_quants["mms1_fgm_b_gse_brst_l2"].coords["time"].values
+            if PRODUCT == Product.R_GSE:
+                data = data_quants["mms1_fgm_r_gse_brst_l2"].values
+                time = data_quants["mms1_fgm_r_gse_brst_l2"].coords["time"].values
+            else:
+                data = data_quants["mms1_fgm_b_gse_brst_l2"].values
+                time = data_quants["mms1_fgm_b_gse_brst_l2"].coords["time"].values
 
     elif INSTRUMENT == Instrument.FSM:
         pyspedas.mms.fsm(
@@ -193,28 +198,33 @@ if __name__ == "__main__":
 
     download_data(
         trange=trange,
-        INSTRUMENT=Instrument.FPI,
-        SPECIES="e",
-        PRODUCT=Product.BULKV,
-        data_rate="aftr",
-        added_time=6,
-    )
-    download_data(
-        trange=trange,
-        INSTRUMENT=Instrument.FPI,
-        SPECIES="i",
-        PRODUCT=Product.NUMBERDENSITY,
-        data_rate="aftr",
-        added_time=6,
-    )
-    download_data(  # FGM SW data
-        trange=trange,
         INSTRUMENT=Instrument.FGM,
-        SPECIES="",
-        PRODUCT="",
-        data_rate="aftr",
-        added_time=6,
+        PRODUCT=Product.R_GSE,
     )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FPI,
+    #     SPECIES="e",
+    #     PRODUCT=Product.BULKV,
+    #     data_rate="aftr",
+    #     added_time=6,
+    # )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FPI,
+    #     SPECIES="i",
+    #     PRODUCT=Product.NUMBERDENSITY,
+    #     data_rate="aftr",
+    #     added_time=6,
+    # )
+    # download_data(  # FGM SW data
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FGM,
+    #     SPECIES="",
+    #     PRODUCT="",
+    #     data_rate="aftr",
+    #     added_time=6,
+    # )
     # download_data(
     #     trange=trange,
     #     INSTRUMENT=Instrument.FSM,
