@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from typing import Literal
 from datetime import datetime as dt
 from datetime import timedelta
+import json
+from phdhelper.helpers.os_shortcuts import get_path
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -192,15 +194,19 @@ def download_data(
 
 
 if __name__ == "__main__":
-    trange = ["2018-03-13/04:41:34", "2018-03-13/04:55:34"]
+    # trange = ["2018-03-13/04:41:34", "2018-03-13/04:55:34"]
     # trange = ["2018-03-16/01:39:54", "2018-03-16/01:56:42"]
     # trange = ["2020-03-18/02:57:00", "2020-03-18/03:08:41"]
+    with open(get_path(__file__) + "/summary.json", "r") as file:
+        summary = json.load(file)
+    trange = summary["trange"]
+    print(trange)
 
-    download_data(
-        trange=trange,
-        INSTRUMENT=Instrument.FGM,
-        PRODUCT=Product.R_GSE,
-    )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FGM,
+    #     PRODUCT=Product.R_GSE,
+    # )
     # download_data(
     #     trange=trange,
     #     INSTRUMENT=Instrument.FPI,

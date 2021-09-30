@@ -1,6 +1,4 @@
 """
-Last modified:  19/04/21
-
 Moving windows of magnetic spectrum, with variable ion & electron limits.
 
 """
@@ -265,7 +263,7 @@ for bin in tqdm(bin_starts):
     knots.append(ks)
 
     # fig, ax = plt.subplots(
-    #     2, 1, figsize=(6, 5), sharex=True, gridspec_kw={"height_ratios": [75, 25]}
+    #     2, 1, figsize=(6, 4.5), sharex=True, gridspec_kw={"height_ratios": [75, 25]}
     # )
     # ax[0].loglog(k, y, color="k", label="Magnetic spectrum")
     # ax[0].loglog(10 ** xx, 10 ** YY, color=mandarin, ls="--", label="MARS fit")
@@ -326,6 +324,7 @@ np.save(f"{path}/knots.npy", np.array(knots))
 np.save(f"{path}/slope_interp.npy", np.array(slope_interp))
 np.save(f"{path}/spectra.npy", np.array(spectra))
 np.save(f"{path}/fsm_sampled_100.npy", fsm)
+np.save(f"{path}/x_interp.npy", x_interp)
 
 fig, ax = plt.subplots(
     3,

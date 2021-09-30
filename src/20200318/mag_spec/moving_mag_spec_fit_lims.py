@@ -326,6 +326,7 @@ np.save(f"{path}/knots.npy", np.array(knots))
 np.save(f"{path}/slope_interp.npy", np.array(slope_interp))
 np.save(f"{path}/spectra.npy", np.array(spectra))
 np.save(f"{path}/fsm_sampled_100.npy", fsm)
+np.save(f"{path}/x_interp.npy", x_interp)
 
 fig, ax = plt.subplots(
     3,

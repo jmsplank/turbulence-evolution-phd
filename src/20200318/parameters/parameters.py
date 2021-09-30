@@ -1,11 +1,13 @@
 import json
+from pprint import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.core import numeric
+import pybowshock as pybs
 import seaborn as sns
+from numpy.core import numeric
 from phdhelper.helpers import os_shortcuts, override_mpl
-from phdhelper.helpers.CONSTANTS import mu_0, m_i
+from phdhelper.helpers.CONSTANTS import R_e, m_i, mu_0
 
 override_mpl.override()
 
@@ -107,3 +109,36 @@ print(f"{mach_number = :04.1f}")
 # plt.tight_layout()
 # plt.savefig(save_path("parameters.png"))
 # plt.show()
+
+##################################################
+# Comparison with model
+##################################################
+r = np.load(fgm_path("data_r_gse.npy"))[:, :3]
+r_time = np.load(fgm_path("time_r_gse.npy"))
+
+r = (r / R_e).mean(axis=0)
+vsw = np.linalg.norm(bulkv_u)
+
+summary["vsw"] = {"units": "km/s", "value": vsw.astype(float)}
+summary["nsw"] = {"units": "cm^-3", "value": (density_u / 1e6).astype(float)}
+
+avg_B_u = all_B_u.mean(axis=0)
+
+omni = np.array([summary["BX"], summary["BY"], summary["BZ"]])
+
+model_n_sh = []
+n_sh = pybs.bs_normal_at_surf_GSE(r, summary["Speed"], "BS: Peredo")
+model_n_sh.append(n_sh)
+theta_Bn = np.rad2deg(
+    np.arccos(np.clip(np.dot(omni / np.linalg.norm(omni), n_sh), -1, 1))
+)
+if theta_Bn > 90:
+    theta_Bn = np.rad2deg(
+        np.arccos(np.clip(np.dot(-avg_B_u / np.linalg.norm(avg_B_u), n_sh), -1, 1))
+    )
+print(f"BS: Peredo -> {theta_Bn:02.5f} | {omni/np.linalg.norm(omni)} {n_sh}")
+
+# summary["theta_Bn"] = theta_Bn
+
+with open(summary_path, "w") as file:
+    json.dump(summary, file)

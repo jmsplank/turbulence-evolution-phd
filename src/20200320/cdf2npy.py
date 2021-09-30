@@ -202,11 +202,11 @@ if __name__ == "__main__":
     trange = summary["trange"]
     print(trange)
 
-    download_data(
-        trange=trange,
-        INSTRUMENT=Instrument.FGM,
-        PRODUCT=Product.R_GSE,
-    )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FGM,
+    #     PRODUCT=Product.R_GSE,
+    # )
     # download_data(
     #     trange=trange,
     #     INSTRUMENT=Instrument.FPI,
@@ -231,23 +231,23 @@ if __name__ == "__main__":
     #     data_rate="aftr",
     #     added_time=6,
     # )
-    # download_data(
-    #     trange=trange,
-    #     INSTRUMENT=Instrument.FSM,
-    #     SPECIES="",
-    #     PRODUCT="",
-    # )
-    # download_data(
-    #     trange=trange,
-    #     INSTRUMENT=Instrument.FGM,
-    #     SPECIES="",
-    #     PRODUCT="",
-    # )
-    # for PRODUCT in [Product.NUMBERDENSITY, Product.TEMPPERP, Product.BULKV]:
-    #     for SPECIES in ["i", "e"]:
-    #         download_data(
-    #             trange=trange,
-    #             INSTRUMENT=Instrument.FPI,
-    #             SPECIES=SPECIES,
-    #             PRODUCT=PRODUCT,
-    #         )
+    download_data(
+        trange=trange,
+        INSTRUMENT=Instrument.FSM,
+        SPECIES="",
+        PRODUCT="",
+    )
+    download_data(
+        trange=trange,
+        INSTRUMENT=Instrument.FGM,
+        SPECIES="",
+        PRODUCT="",
+    )
+    for PRODUCT in [Product.NUMBERDENSITY, Product.TEMPPERP, Product.BULKV]:
+        for SPECIES in ["i", "e"]:
+            download_data(
+                trange=trange,
+                INSTRUMENT=Instrument.FPI,
+                SPECIES=SPECIES,
+                PRODUCT=PRODUCT,
+            )

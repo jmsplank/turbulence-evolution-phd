@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from typing import Literal
 from datetime import datetime as dt
 from datetime import timedelta
+import json
+from phdhelper.helpers.os_shortcuts import get_path
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,6 +24,7 @@ class Product:
     TEMPPERP = "tempperp"
     TEMPPARA = "temppara"
     BULKV = "bulkv"
+    R_GSE = "r_gse"
 
 
 class Instrument:
@@ -72,8 +75,12 @@ def download_data(
                 data_rate=data_rate,
                 level="l2",
             )
-            data = data_quants["mms1_fgm_b_gse_brst_l2"].values
-            time = data_quants["mms1_fgm_b_gse_brst_l2"].coords["time"].values
+            if PRODUCT == Product.R_GSE:
+                data = data_quants["mms1_fgm_r_gse_brst_l2"].values
+                time = data_quants["mms1_fgm_r_gse_brst_l2"].coords["time"].values
+            else:
+                data = data_quants["mms1_fgm_b_gse_brst_l2"].values
+                time = data_quants["mms1_fgm_b_gse_brst_l2"].coords["time"].values
 
     elif INSTRUMENT == Instrument.FSM:
         pyspedas.mms.fsm(
@@ -189,16 +196,25 @@ def download_data(
 if __name__ == "__main__":
     # trange = ["2018-03-13/04:41:34", "2018-03-13/04:55:34"]
     # trange = ["2018-03-16/01:39:54", "2018-03-16/01:56:42"]
-    trange = ["2020-03-18/02:57:00", "2020-03-18/03:08:41"]
+    # trange = ["2020-03-18/02:57:00", "2020-03-18/03:08:41"]
+    with open(get_path(__file__) + "/summary.json", "r") as file:
+        summary = json.load(file)
+    trange = summary["trange"]
+    print(trange)
 
     download_data(
         trange=trange,
-        INSTRUMENT=Instrument.FPI,
-        SPECIES="e",
-        PRODUCT=Product.BULKV,
-        data_rate="aftr",
-        added_time=6,
+        INSTRUMENT=Instrument.FGM,
+        PRODUCT=Product.R_GSE,
     )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FPI,
+    #     SPECIES="e",
+    #     PRODUCT=Product.BULKV,
+    #     data_rate="aftr",
+    #     added_time=6,
+    # )
     # download_data(
     #     trange=trange,
     #     INSTRUMENT=Instrument.FPI,

@@ -118,51 +118,31 @@ r_time = np.load(fgm_path("time_r_gse.npy"))
 r = (r / R_e).mean(axis=0)
 vsw = np.linalg.norm(bulkv_u)
 
+summary["vsw"] = {"units": "km/s", "value": vsw.astype(float)}
+summary["nsw"] = {"units": "cm^-3", "value": (density_u / 1e6).astype(float)}
+from pprint import pprint
+
+pprint(summary)
+with open(summary_path, "w") as file:
+    json.dump(summary, file)
+
 avg_B_u = all_B_u.mean(axis=0)
 
+omni = np.array([summary["BX"], summary["BY"], summary["BZ"]])
+
 model_n_sh = []
-for model in pybs.model_names():
-    if "BS:" in model:
-        n_sh = pybs.bs_normal_at_surf_GSE(r, vsw, model)
-        model_n_sh.append(n_sh)
-        theta_Bn = np.rad2deg(
-            np.arccos(np.clip(np.dot(avg_B_u / np.linalg.norm(avg_B_u), n_sh), -1, 1))
-        )
-        if theta_Bn > 90:
-            theta_Bn = np.rad2deg(
-                np.arccos(
-                    np.clip(np.dot(-avg_B_u / np.linalg.norm(avg_B_u), n_sh), -1, 1)
-                )
-            )
-        print(f"{model} -> {theta_Bn:02.5f}")
-
-
-def appendSpherical_np(xyz):
-    ptsnew = np.hstack((xyz, np.zeros(xyz.shape)))
-    xy = xyz[:, 0] ** 2 + xyz[:, 1] ** 2
-    ptsnew[:, 3] = np.sqrt(xy + xyz[:, 2] ** 2)
-    # ptsnew[:, 4] = np.arctan2(
-    #     np.sqrt(xy), xyz[:, 2]
-    # )  # for elevation angle defined from Z-axis down
-    ptsnew[:, 4] = np.arctan2(
-        xyz[:, 2], np.sqrt(xy)
-    )  # for elevation angle defined from XY-plane up
-    ptsnew[:, 5] = np.arctan2(xyz[:, 1], xyz[:, 0])
-    return np.rad2deg(ptsnew[:, -2:])
-
-
-spherical_model = appendSpherical_np(np.array(model_n_sh))
-spherical_coplanar = appendSpherical_np(shock_normals)
-spherical_model = np.abs(spherical_model)
-mean_spherical_coplanar = spherical_coplanar.mean(axis=0)
-std_spherical_coplanar = spherical_coplanar.std(axis=0)
-
-plt.scatter(spherical_model[:, 0], spherical_model[:, 1])
-plt.scatter(mean_spherical_coplanar[0], mean_spherical_coplanar[1])
-plt.errorbar(
-    mean_spherical_coplanar[0],
-    mean_spherical_coplanar[1],
-    std_spherical_coplanar[1],
-    std_spherical_coplanar[0],
+n_sh = pybs.bs_normal_at_surf_GSE(r, summary["Speed"], "BS: Peredo")
+model_n_sh.append(n_sh)
+theta_Bn = np.rad2deg(
+    np.arccos(np.clip(np.dot(omni / np.linalg.norm(omni), n_sh), -1, 1))
 )
-plt.show()
+if theta_Bn > 90:
+    theta_Bn = np.rad2deg(
+        np.arccos(np.clip(np.dot(-avg_B_u / np.linalg.norm(avg_B_u), n_sh), -1, 1))
+    )
+print(f"BS: Peredo -> {theta_Bn:02.5f}")
+
+# summary["theta_Bn"] = theta_Bn
+
+with open(summary_path, "w") as file:
+    json.dump(summary, file)

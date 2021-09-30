@@ -1,1 +1,1 @@
-{"shock": {"timestamp" : 1521165086}, "trange": ["2018-03-16/01:39:54", "2018-03-16/01:56:42"]}
+{"shock": {"timestamp": 1521165086}, "trange": ["2018-03-16/01:39:54", "2018-03-16/01:56:42"], "vsw": {"units": "km/s", "value": 478.0941467285156}, "nsw": {"units": "cm^-3", "value": 8.952481}, "BX": 0.08, "BY": -6.32, "BZ": -1.28, "Speed": 478.3, "Plasma_beta": 1.69, "Alfven_mach_number": 9.7, "Magnetosonic_Mach": 6.2, "theta_Bn": 41, "SW": {"timestamp": 1521165275}}
