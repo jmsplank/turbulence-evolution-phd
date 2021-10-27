@@ -63,7 +63,7 @@ def download_data(
                 probe=probe,
                 data_rate="srvy",
                 level="l2",
-                time_clip=True,
+                # time_clip=True,
             )
             data = data_quants["mms1_fgm_b_gse_srvy_l2"].values
             time = data_quants["mms1_fgm_b_gse_srvy_l2"].coords["time"].values
@@ -223,31 +223,31 @@ if __name__ == "__main__":
     #     data_rate="aftr",
     #     added_time=6,
     # )
-    # download_data(  # FGM SW data
-    #     trange=trange,
-    #     INSTRUMENT=Instrument.FGM,
-    #     SPECIES="",
-    #     PRODUCT="",
-    #     data_rate="aftr",
-    #     added_time=6,
-    # )
-    download_data(
-        trange=trange,
-        INSTRUMENT=Instrument.FSM,
-        SPECIES="",
-        PRODUCT="",
-    )
-    download_data(
+    download_data(  # FGM SW data
         trange=trange,
         INSTRUMENT=Instrument.FGM,
         SPECIES="",
         PRODUCT="",
+        data_rate="aftr",
+        added_time=6,
     )
-    for PRODUCT in [Product.NUMBERDENSITY, Product.TEMPPERP, Product.BULKV]:
-        for SPECIES in ["i", "e"]:
-            download_data(
-                trange=trange,
-                INSTRUMENT=Instrument.FPI,
-                SPECIES=SPECIES,
-                PRODUCT=PRODUCT,
-            )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FSM,
+    #     SPECIES="",
+    #     PRODUCT="",
+    # )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FGM,
+    #     SPECIES="",
+    #     PRODUCT="",
+    # )
+    # for PRODUCT in [Product.NUMBERDENSITY, Product.TEMPPERP, Product.BULKV]:
+    #     for SPECIES in ["i", "e"]:
+    #         download_data(
+    #             trange=trange,
+    #             INSTRUMENT=Instrument.FPI,
+    #             SPECIES=SPECIES,
+    #             PRODUCT=PRODUCT,
+    #         )

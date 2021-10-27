@@ -1,4 +1,6 @@
 """
+Last modified:  19/04/21
+
 Moving windows of magnetic spectrum, with variable ion & electron limits.
 
 """
@@ -184,6 +186,9 @@ for bin in tqdm(bin_starts):
     y = np.sum([Y[i] for i in ["x", "y", "z"]], axis=0)
     k = freq[freq > 0] * 2 * np.pi / meanv
 
+    # Scale by kolmogorov
+    y = y * (k ** (5 / 3))
+
     number_density_i = big_number_density_i[
         (time_numberdensity_i >= time[0]) & (time_numberdensity_i <= time[-1])
     ]
@@ -236,6 +241,9 @@ for bin in tqdm(bin_starts):
     YY = np.array(r_out.y)
     slopes_all = np.gradient(YY, abs(xx[0] - xx[1]))
 
+    # Correct for scaling
+    slopes_all = slopes_all - (5 / 3)
+
     slopes, slope_index, slope_counts = np.unique(
         np.round(slopes_all, 2),
         return_index=True,
@@ -262,45 +270,50 @@ for bin in tqdm(bin_starts):
     ks[ks == 0] = np.nan
     knots.append(ks)
 
-    # fig, ax = plt.subplots(
-    #     2, 1, figsize=(6, 4.5), sharex=True, gridspec_kw={"height_ratios": [75, 25]}
-    # )
-    # ax[0].loglog(k, y, color="k", label="Magnetic spectrum")
-    # ax[0].loglog(10 ** xx, 10 ** YY, color=mandarin, ls="--", label="MARS fit")
-    # lims = (1e-16, 1)
-    # for subplot in [0, 1]:
-    #     for ks in range(len(slope_k)):
-    #         ax[subplot].axvline(slope_k[ks], color=mandarin, alpha=0.4)
-    #     ax[subplot].axvline(ion_lim, color=red, label=r"Ion limit ($\rho_i$)")
-    #     ax[subplot].axvline(ion_lims[1], color=red, ls="--", label=r"Ion limit ($d_i$)")
-    #     ax[subplot].axvline(electron_lim, color=green, label="Electron limit")
-    #     ax[subplot].axvspan(
-    #         10, k[-1], fc="k", ec=None, alpha=0.1, label="Instrument noise"
-    #     )
-    #     ax[subplot].grid(False)
+    # Unscale by kolmogorov
+    y = y / (k ** (5 / 3))
 
-    # ax[0].set_ylim(lims)
-    # ax[0].set_xlim((k[0], k[-1]))
-    # ax[0].legend(loc="upper right", fontsize=10)
+    fig, ax = plt.subplots(
+        2, 1, figsize=(6, 5), sharex=True, gridspec_kw={"height_ratios": [75, 25]}
+    )
+    ax[0].loglog(k, y, color="k", label="Magnetic spectrum")
+    xx = 10 ** xx
+    YY = 10 ** YY
+    ax[0].loglog(xx, YY / (xx ** (5 / 3)), color=mandarin, ls="--", label="MARS fit")
+    lims = (1e-16, 1)
+    for subplot in [0, 1]:
+        for ks in range(len(slope_k)):
+            ax[subplot].axvline(slope_k[ks], color=mandarin, alpha=0.4)
+        ax[subplot].axvline(ion_lim, color=red, label=r"Ion limit ($\rho_i$)")
+        ax[subplot].axvline(ion_lims[1], color=red, ls="--", label=r"Ion limit ($d_i$)")
+        ax[subplot].axvline(electron_lim, color=green, label="Electron limit")
+        ax[subplot].axvspan(
+            10, k[-1], fc="k", ec=None, alpha=0.1, label="Instrument noise"
+        )
+        ax[subplot].grid(False)
 
-    # plot_slope = slopes_all[len(slopes_all) // 2]
-    # ax[1].loglog(
-    #     k,
-    #     y * (k ** -plot_slope),
-    #     color="k",
-    #     label="Magnetic spectrum",
-    # )
-    # ax[1].set_xlim((k[0], k[-1]))
+    ax[0].set_ylim(lims)
+    ax[0].set_xlim((k[0], k[-1]))
+    ax[0].legend(loc="upper right", fontsize=10)
 
-    # ax[0].set_ylabel(r"Magnetic spectrum [$nT^2Hz^{-1}$]")
-    # ax[1].set_ylabel(rf"Spectrum $\times k^{{{-plot_slope:.2f}}}$")
-    # ax[1].set_xlabel("$k$ [$km^{-1}$]")
+    plot_slope = -5 / 3
+    ax[1].loglog(
+        k,
+        y * (k ** -plot_slope),
+        color="k",
+        label="Magnetic spectrum",
+    )
+    ax[1].set_xlim((k[0], k[-1]))
 
-    # plt.tight_layout()
-    # plt.subplots_adjust(wspace=0, hspace=0)
-    # plt.savefig(f"{path}/anim/{bin}.png", dpi=300)
-    # plt.clf()
-    # del fig, ax
+    ax[0].set_ylabel(r"Magnetic spectrum [$nT^2Hz^{-1}$]")
+    ax[1].set_ylabel(rf"Spectrum $\times k^{{5/3}}$")
+    ax[1].set_xlabel("$k$ [$km^{-1}$]")
+
+    plt.tight_layout()
+    plt.subplots_adjust(wspace=0, hspace=0)
+    plt.savefig(f"{path}/anim/{bin}.png", dpi=300)
+    plt.clf()
+    del fig, ax
 
     del y
     del Y
@@ -353,12 +366,12 @@ im = ax[2, 0].imshow(
 )
 fig.colorbar(im, cax=ax[2, 1])
 
-ax[2, 0].imshow(
-    knots.T[1:, :],
-    extent=(times[0], times[-1], x_interp[1], INTERP_MAX),
-    origin="lower",
-    aspect="auto",
-)
+# ax[2, 0].imshow(
+#     knots.T[1:, :],
+#     extent=(times[0], times[-1], x_interp[1], INTERP_MAX),
+#     origin="lower",
+#     aspect="auto",
+# )
 
 slope_lims[slope_lims == 0] = np.nan
 slope_lims_other[slope_lims_other == 0] = np.nan
@@ -402,7 +415,9 @@ ax[0, 0].set_ylabel("$|B|$ [$nT$]")
 ax[1, 0].set_ylabel("Slope")
 ax[2, 0].set_ylabel(r"log $\left(k/km^{-1}\right)$")
 ax[2, 1].set_ylabel("Slope")
-ax[2, 0].set_xlabel("Time UTC 13/03/2018 (hh:mm:ss)")
+ax[2, 0].set_xlabel(
+    f"Time UTC {dt.strftime(dt.utcfromtimestamp(big_time[0]), r'%d/%m/%Y')} (hh:mm:ss)"
+)
 
 for i in range(3):
     ax[i, 0].set_xlim((times[0], times[-1]))
@@ -423,4 +438,4 @@ ax[2, 0].yaxis.set_major_locator(MaxNLocator(prune="upper"))
 plt.tight_layout()
 plt.subplots_adjust(wspace=0.02, hspace=0)
 # plt.show()
-plt.savefig(f"{path}/poster_MAIN_PLOT.png", dpi=300)
+plt.savefig(f"{path}/poster_MAIN_PLOT.svg", dpi=300)

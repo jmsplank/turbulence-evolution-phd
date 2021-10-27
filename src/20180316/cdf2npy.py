@@ -25,6 +25,7 @@ class Product:
     TEMPPARA = "temppara"
     BULKV = "bulkv"
     R_GSE = "r_gse"
+    ENERGYSPEC = "energyspectr_omni"
 
 
 class Instrument:
@@ -63,7 +64,7 @@ def download_data(
                 probe=probe,
                 data_rate="srvy",
                 level="l2",
-                time_clip=True,
+                # time_clip=True,
             )
             data = data_quants["mms1_fgm_b_gse_srvy_l2"].values
             time = data_quants["mms1_fgm_b_gse_srvy_l2"].coords["time"].values
@@ -146,6 +147,18 @@ def download_data(
                     .coords["time"]
                     .values
                 )
+            elif PRODUCT == Product.ENERGYSPEC:
+                data = data_quants[f"mms1_d{SPECIES}s_energyspectr_omni_brst"].values
+                time = (
+                    data_quants[f"mms1_d{SPECIES}s_energyspectr_omni_brst"]
+                    .coords["time"]
+                    .values
+                )
+                bins = (
+                    data_quants[f"mms1_d{SPECIES}s_energyspectr_omni_brst"]
+                    .coords["spec_bins"]
+                    .values
+                )
             else:
                 raise NotImplementedError(
                     f"No definition found for PRODUCT == Product.{PRODUCT.upper()}"
@@ -189,6 +202,16 @@ def download_data(
     log.info(
         f"Saved {dir_name}/time{'_' + PRODUCT if PRODUCT != '' else ''}{'_' + SPECIES if SPECIES != '' else ''}.npy"
     )
+    try:
+        np.save(
+            f"{dir_name}/bins{'_'+PRODUCT if PRODUCT != '' else ''}{'_' + SPECIES if SPECIES != '' else ''}.npy",
+            bins,
+        )
+        log.info(
+            f"Saved {dir_name}/bins{'_' + PRODUCT if PRODUCT != '' else ''}{'_' + SPECIES if SPECIES != '' else ''}.npy"
+        )
+    except NameError:
+        pass
 
     del data, time
 
@@ -202,11 +225,11 @@ if __name__ == "__main__":
     trange = summary["trange"]
     print(trange)
 
-    download_data(
-        trange=trange,
-        INSTRUMENT=Instrument.FGM,
-        PRODUCT=Product.R_GSE,
-    )
+    # download_data(
+    #     trange=trange,
+    #     INSTRUMENT=Instrument.FGM,
+    #     PRODUCT=Product.R_GSE,
+    # )
     # download_data(
     #     trange=trange,
     #     INSTRUMENT=Instrument.FPI,
@@ -215,6 +238,7 @@ if __name__ == "__main__":
     #     data_rate="aftr",
     #     added_time=6,
     # )
+
     # download_data(
     #     trange=trange,
     #     INSTRUMENT=Instrument.FPI,
@@ -223,6 +247,12 @@ if __name__ == "__main__":
     #     data_rate="aftr",
     #     added_time=6,
     # )
+    download_data(
+        trange=trange,
+        INSTRUMENT=Instrument.FPI,
+        SPECIES="i",
+        PRODUCT=Product.ENERGYSPEC,
+    )
     # download_data(  # FGM SW data
     #     trange=trange,
     #     INSTRUMENT=Instrument.FGM,

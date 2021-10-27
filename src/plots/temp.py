@@ -15,14 +15,15 @@ gen_path = lambda x: os_shortcuts.new_path(os_shortcuts.get_path(__file__, "..")
 path_13 = gen_path("20180313")
 path_16 = gen_path("20180316")
 path_18 = gen_path("20200318")
+path_20 = gen_path("20200320")
 
 fgm = "data/fgm"
 mag = join(fgm, "data.npy")
 mag_time = join(fgm, "time.npy")
 
-path = path_16
+path = path_20
 
-data = np.load(path(mag))
+data = np.load(path(mag))[:, 3]
 time = np.load(path(mag_time))
 
 plt.plot(time, data)

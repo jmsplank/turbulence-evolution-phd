@@ -1,1 +1,16 @@
-{"shock": {"timestamp": 1584500550}, "trange": ["2020-03-18/02:57:00", "2020-03-18/03:08:41"], "vsw": {"units": "km/s", "value": 367.4017639160156}, "nsw": {"units": "cm^-3", "value": 5.616135}, "BX": 4.46, "BY": -2.56, "BZ": 1.61, "Speed": 393.9, "Plasma_beta": 1.33, "Alfven_mach_number": 8.1, "Magnetosonic_Mach": 5.5, "theta_Bn": 35, "SW": {"timestamp": 1584500593}}
+{
+  "shock": { "timestamp": 1584500550 },
+  "trange": ["2020-03-18/02:57:00", "2020-03-18/03:08:41"],
+  "vsw": { "units": "km/s", "value": 367.4017639160156 },
+  "nsw": { "units": "cm^-3", "value": 5.616135 },
+  "BX": 4.46,
+  "BY": -2.56,
+  "BZ": 1.61,
+  "Speed": 393.9,
+  "Plasma_beta": 1.33,
+  "Alfven_mach_number": 8.1,
+  "Magnetosonic_Mach": 5.5,
+  "theta_Bn": 35,
+  "SW": { "timestamp": 1584500593 },
+  "sections": { "timestamp": [1584500552], "label": ["STR", "FS/SW"] }
+}

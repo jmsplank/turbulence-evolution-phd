@@ -186,6 +186,9 @@ for bin in tqdm(bin_starts):
     y = np.sum([Y[i] for i in ["x", "y", "z"]], axis=0)
     k = freq[freq > 0] * 2 * np.pi / meanv
 
+    # Scale by kolmogorov
+    y = y * (k ** (5 / 3))
+
     number_density_i = big_number_density_i[
         (time_numberdensity_i >= time[0]) & (time_numberdensity_i <= time[-1])
     ]
@@ -237,6 +240,9 @@ for bin in tqdm(bin_starts):
     r_out = pd.read_csv(f"{path}/mars.csv")
     YY = np.array(r_out.y)
     slopes_all = np.gradient(YY, abs(xx[0] - xx[1]))
+
+    # Correct for scaling
+    slopes_all = slopes_all - (5 / 3)
 
     slopes, slope_index, slope_counts = np.unique(
         np.round(slopes_all, 2),
@@ -355,12 +361,12 @@ im = ax[2, 0].imshow(
 )
 fig.colorbar(im, cax=ax[2, 1])
 
-ax[2, 0].imshow(
-    knots.T[1:, :],
-    extent=(times[0], times[-1], x_interp[1], INTERP_MAX),
-    origin="lower",
-    aspect="auto",
-)
+# ax[2, 0].imshow(
+#     knots.T[1:, :],
+#     extent=(times[0], times[-1], x_interp[1], INTERP_MAX),
+#     origin="lower",
+#     aspect="auto",
+# )
 
 slope_lims[slope_lims == 0] = np.nan
 slope_lims_other[slope_lims_other == 0] = np.nan
@@ -404,7 +410,9 @@ ax[0, 0].set_ylabel("$|B|$ [$nT$]")
 ax[1, 0].set_ylabel("Slope")
 ax[2, 0].set_ylabel(r"log $\left(k/km^{-1}\right)$")
 ax[2, 1].set_ylabel("Slope")
-ax[2, 0].set_xlabel("Time UTC 16/03/2018 (hh:mm:ss)")
+ax[2, 0].set_xlabel(
+    f"Time UTC {dt.strftime(dt.utcfromtimestamp(big_time[0]), r'%d/%m/%Y')} (hh:mm:ss)"
+)
 
 for i in range(3):
     ax[i, 0].set_xlim((times[0], times[-1]))
