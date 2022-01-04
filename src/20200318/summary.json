@@ -9,6 +9,8 @@
   "Speed": 393.9,
   "Plasma_beta": 1.33,
   "Alfven_mach_number": 8.1,
+  "Upstream_B": 4.8,
+  "Proton_Density": 5.31,
   "Magnetosonic_Mach": 5.5,
   "theta_Bn": 35,
   "SW": { "timestamp": 1584500593 },

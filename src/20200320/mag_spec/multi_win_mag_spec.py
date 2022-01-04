@@ -36,7 +36,8 @@ all_temp_i_time = np.load(fpi_path("time_tempperp_i.npy"))
 all_temp_e = np.load(fpi_path("data_tempperp_e.npy"))
 all_temp_e_time = np.load(fpi_path("time_tempperp_e.npy"))
 
-SPACING = 9.5  # seconds of data for each window
+# SPACING = 9.5  # seconds of data for each window
+SPACING = 16
 td = all_b_time[1] - all_b_time[0]
 
 with open(main_path("summary.json"), "r") as file:
@@ -53,6 +54,7 @@ burst_stop = summary["burst_stop"]
 slopes_all = []
 times_all = []
 k_extent_all = []
+lims_all = []
 
 
 for burst in range(len(burst_start)):
@@ -61,6 +63,7 @@ for burst in range(len(burst_start)):
     print(f"Burst {burst+1} has {len(windows)} windows.")
     slopes_burst = []
     times_burst = []
+    lims_burst = []
     for win in tqdm(range(len(windows) - 1)):
         data = all_b[(all_b_time >= windows[win]) & (all_b_time < windows[win + 1]), :]
         time = all_b_time[
@@ -108,7 +111,7 @@ for burst in range(len(burst_start)):
             temp_perp=temp_e,
             B_field=data,
         )
-
+        lims_burst.append(np.array([*ion_lims, electron_lims[0]]))
         instrument_mask = k <= 10
         kk = np.log10(k[instrument_mask])
         yy = np.log10(y[instrument_mask])
@@ -160,10 +163,12 @@ for burst in range(len(burst_start)):
     slopes_all.append(np.array(slopes_burst))
     times_all.append(np.array(times_burst))
     k_extent_all.append(np.array(k_extent_burst))
+    lims_all.append(np.array(lims_burst))
 
 np.save(main_path("mag_spec/slopes_all.npy"), np.array(slopes_all))
 np.save(main_path("mag_spec/times_all.npy"), np.array(times_all))
 np.save(main_path("mag_spec/k_extent_all.npy"), np.array(k_extent_all))
+np.save(main_path("mag_spec/lims_all.npy"), np.array(lims_all))
 
 fig, ax = plt.subplots(1, 2, gridspec_kw={"width_ratios": [98, 2]})
 

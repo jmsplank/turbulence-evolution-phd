@@ -27,7 +27,7 @@ for i in range(3):
 ##################################################
 
 ##### SPLIT INTO CHUNKS ######
-CHUNK_LEN = 150  # 10 points per chunk
+CHUNK_LEN = 150  # 150 points per chunk
 SPACING = td * CHUNK_LEN  # ~9.3s when CHUNK_LEN==150
 print(f"Each {SPACING}s window contains {SPACING/td} points")
 chunk_start = np.arange(0, len(time) - CHUNK_LEN, CHUNK_LEN, dtype=int)

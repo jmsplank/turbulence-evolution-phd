@@ -96,7 +96,10 @@ ax[3].set_ylim((-10, 60))
 ax[4].set_yticks(np.logspace(1, 4, 4))
 ax[4].set_yticklabels([f"$10^{x}$" for x in range(1, 5)])
 
+print((fgm_time[-1] - fgm_time[0]) / 60)
+
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
 plt.savefig(oss.new_path(oss.get_path(__file__))("summary_17deg.png"), dpi=300)
+plt.savefig(oss.new_path(oss.get_path(__file__))("summary_17deg.pdf"), dpi=300)
 plt.show()

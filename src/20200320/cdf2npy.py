@@ -166,13 +166,13 @@ def download_data(
             finite_mask = np.isfinite(dat)
             if np.size(dat) - np.sum(finite_mask) > 0:
                 log.info("nans present")
-                data[:, i] = interp(dat, finite_mask)
+                # data[:, i] = interp(dat, finite_mask)
     else:
         log.info("single-dimension data")
         finite_mask = np.isfinite(data)
         if (np.size(data) - np.sum(finite_mask)) > 0:
             log.info("nans present")
-            data = interp(data, finite_mask)
+            # data = interp(data, finite_mask)
 
     log.info("Saving arrays")
     np.save(

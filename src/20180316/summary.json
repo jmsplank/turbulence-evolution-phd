@@ -10,6 +10,8 @@
   "Plasma_beta": 1.69,
   "Alfven_mach_number": 9.7,
   "Magnetosonic_Mach": 6.2,
+  "Upstream_B": 6.26,
+  "Proton_Density": 5.82,
   "theta_Bn": 41,
   "SW": { "timestamp": 1521165275 },
   "sections": {

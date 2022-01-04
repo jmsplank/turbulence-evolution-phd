@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from phdhelper.helpers import override_mpl
 from phdhelper.helpers.os_shortcuts import get_path, new_path
+from phdhelper.helpers.COLOURS import red
 import json
 from datetime import datetime as dt
 
@@ -21,6 +22,7 @@ fgm_time = np.load(fgm_path("time.npy"))
 slopes_all = np.load(path("slopes_all.npy"), allow_pickle=True)
 times_all = np.load(path("times_all.npy"), allow_pickle=True)
 k_extent_all = np.load(path("k_extent_all.npy"), allow_pickle=True)
+lims_all = np.load(path("lims_all.npy"), allow_pickle=True)
 
 fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 8 * (9 / 16)))
 
@@ -45,12 +47,14 @@ slc = np.nonzero(
 slopes_all = slopes_all[slc]
 times_all = times_all[slc]
 k_extent_all = k_extent_all[slc]
+lims_all = lims_all[slc]
+print([len(a) for a in lims_all])
 
 for i in range(len(start)):
     ax[0].plot(
         fgm_time[start[i] : stop[i]],
         fgm[start[i] : stop[i], 3],
-        color="k",
+        color=red,
     )
 
 for i in range(len(slopes_all)):
@@ -67,8 +71,41 @@ for i in range(len(slopes_all)):
         cmap="custom_diverging",
         vmin=-4.667,
         vmax=1.333,
+        zorder=1,
     )
-ax[1].set_ylim(10 ** np.array(ax2.get_ylim()))
+    rhoi = ax2.plot(
+        times_all[i],
+        np.log10(lims_all[i][:, 0]),
+        ls="-.",
+        color="k",
+        zorder=10,
+        label=r"$1/\rho_i$",
+    )
+    di = ax2.plot(
+        times_all[i],
+        np.log10(lims_all[i][:, 1]),
+        ls="--",
+        color="k",
+        zorder=10,
+        label=r"$1/d_i$",
+    )
+    de = ax2.plot(
+        times_all[i],
+        np.log10(lims_all[i][:, 2]),
+        color="k",
+        # zorder=10,
+        label=r"$1/d_e\approx1/\rho_e$",
+    )
+y_axis_limits = 10 ** np.array(
+    [
+        k_extent_all[0][0],
+        k_extent_all[0][1],
+    ]
+)
+print(y_axis_limits)
+ax[1].set_ylim(y_axis_limits)
+ax2.set_ylim(np.log10(y_axis_limits))
+# ax[1].set_ylim(10 ** np.array(ax2.get_ylim()))
 ax2.set_yticklabels([])
 ax2.set_ylabel("")
 
@@ -86,7 +123,11 @@ ax[-1].set_xlabel(
     f"Time UTC {dt.strftime(dt.utcfromtimestamp(fgm_time[0]), r'%d/%m/%Y')} (HH:MM)"
 )
 
+lns = rhoi + di + de
+labs = [l.get_label() for l in lns]
+ax2.legend(lns, labs, loc="upper left", fontsize=8)
+
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-plt.savefig(path("20203020_magSpec.png"), dpi=300)
+plt.savefig(path("20200320_magSpec.pdf"), dpi=300)
 plt.show()

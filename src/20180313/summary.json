@@ -8,6 +8,8 @@
   "BZ": 0.12,
   "Speed": 415.6,
   "Plasma_beta": 1.65,
+  "Upstream_B": 2.99,
+  "Proton_Density": 7.56,
   "Alfven_mach_number": 9.3,
   "Magnetosonic_Mach": 6.0,
   "theta_Bn": 67.7,
