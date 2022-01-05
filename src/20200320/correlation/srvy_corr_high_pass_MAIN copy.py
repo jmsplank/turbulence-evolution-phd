@@ -24,29 +24,29 @@ override_mpl.override("|krgb")
 # e = Event(__file__)
 
 # B, B_time = e.load_fgm_srvy()
-def init(cross_corr, input_arr):
-    globals()["cross_corr"] = cross_corr
-    globals()["input_arr"] = input_arr
+# def init(cross_corr, input_arr):
+#     globals()["cross_corr"] = cross_corr
+#     globals()["input_arr"] = input_arr
 
 
-def worker(i):
-    print(f"{mp.current_process().name} working on {i}")
-    global cross_corr
-    global input_arr
-    rolled = np.roll(input_arr, i)
-    rolled[:i] = 0
-    cross_corr[i] = np.nanmean(rolled * input_arr)
-    print(f"{mp.current_process().name} done {i}")
+# def worker(i):
+#     print(f"{mp.current_process().name} working on {i}")
+#     global cross_corr
+#     global input_arr
+#     rolled = np.roll(input_arr, i)
+#     rolled[:i] = 0
+#     cross_corr[i] = np.nanmean(rolled * input_arr)
+#     print(f"{mp.current_process().name} done {i}")
 
 
-def crosscorr(x):
+# def crosscorr(x):
 
-    cross_corr = mp.Array("d", np.empty_like(x), lock=False)
-    input_arr = x
-    mp.Pool(8, initializer=init, initargs=(cross_corr, input_arr)).map(
-        worker, range(len(x))
-    )
-    return cross_corr
+#     cross_corr = mp.Array("d", np.empty_like(x), lock=False)
+#     input_arr = x
+#     mp.Pool(8, initializer=init, initargs=(cross_corr, input_arr)).map(
+#         worker, range(len(x))
+#     )
+#     return cross_corr
 
 
 def main():
@@ -85,15 +85,15 @@ def main():
     f = interp1d(i_v_time, i_vx)
     vx_i = f(time)
 
-    thresh = 1  # seconds
+    # thresh = 1  # seconds
 
-    big_diffs = np.diff(B_time) > thresh
-    index_big_diffs = np.nonzero(big_diffs)[0]
+    # big_diffs = np.diff(B_time) > thresh
+    # index_big_diffs = np.nonzero(big_diffs)[0]
 
-    for index in index_big_diffs:
-        minval = min([bsl(time, B_time[index]), len(time) - 1])
-        maxval = min([bsl(time, B_time[index + 1]), len(time) - 1])
-        data[minval:maxval, :] = np.nan
+    # for index in index_big_diffs:
+    #     minval = min([bsl(time, B_time[index]), len(time) - 1])
+    #     maxval = min([bsl(time, B_time[index + 1]), len(time) - 1])
+    #     data[minval:maxval, :] = np.nan
 
     def crop(arr, time, c):
         return arr[(time >= c[0]) & (time < c[1])]
@@ -138,15 +138,15 @@ def main():
             d_i_chunk = d_i[chunk : chunk + CHUNK_LEN].mean()
             v_i_chunk = vx_i[chunk : chunk + CHUNK_LEN].mean()
 
-            correlated = np.empty((cdata.shape[0], 3))
+            correlated = np.empty((cdata.shape[0] * 2 - 1, 3))
             for i in range(3):
-                correlated[:, i] = crosscorr(cdata[:, i])
+                correlated[:, i] = correlate(cdata[:, i], cdata[:, i])
             correlated = correlated.mean(axis=1)
-            # lags = correlation_lags(cdata[:, i].size, cdata[:, i].size, mode="full")
-            lags = np.arange(len(cdata[:, i]))
+            lags = correlation_lags(cdata[:, i].size, cdata[:, i].size, mode="full")
+            # lags = np.arange(len(cdata[:, i]))
             correlated = correlated / correlated[lags == 0]
-            # correlated = correlated[lags >= 0]
-            # lags = lags[lags >= 0]
+            correlated = correlated[lags >= 0]
+            lags = lags[lags >= 0]
             lags = lags * td * v_i_chunk / d_i_chunk
 
             try:
@@ -176,7 +176,7 @@ def main():
 
     ##### ROW 2
     PLOT_MIN = min(lambdas)
-    PLOT_MAX = 1000
+    PLOT_MAX = 50
 
     spacing = np.diff(np.log10(TmaxA))[0] / 2
     spacing = np.logspace(
@@ -229,10 +229,19 @@ def main():
     ax[1, 0].set_yscale("log")
     ax[1, 0].set_xlim((time[0], time[-1]))
 
+    ticks = np.arange(int(time[0]), time[-1], dtype=int)
+    ticks = ticks[np.nonzero(ticks % (10 * 60) == 0)]
+    ax[-1, 0].set_xticks(ticks)
+    ax[-1, 0].set_xticklabels([f"{dt.utcfromtimestamp(tick):%H:%M}" for tick in ticks])
+
+    ax[0, 0].set_ylabel("$|B|$")
+    ax[-1, 0].set_xlabel(f"Time UTC {dt.utcfromtimestamp(time[0]):%d/%m/%Y} (HH:MM)")
+    ax[1, 0].set_ylabel("$T_{max}\,[s]$")
+
     plt.tight_layout()
     plt.subplots_adjust(hspace=0)
-    plt.show()
-    # plt.savefig(save_path("pcolormesh.png"), dpi=300)
+    # plt.show()
+    plt.savefig(save_path("20200320_corr_len.pdf"), dpi=300)
 
 
 if __name__ == "__main__":

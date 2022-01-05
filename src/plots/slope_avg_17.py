@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from phdhelper.helpers import override_mpl
 from phdhelper.helpers.os_shortcuts import get_path, new_path
 from phdhelper.helpers.COLOURS import mandarin, blue, green
+from os.path import join
 
 override_mpl.override()
 override_mpl.cmaps(name="custom_diverging")
@@ -31,7 +32,7 @@ for i in range(len(slopes)):
 FS = [the_times[0], 1584735999]
 STR = [1584735999, 1584736664]
 DS = [1584736664, 1584737805]
-
+fig = plt.figure(figsize=(6, 4))
 plt.plot(ks, np.ones_like(ks) * (-5 / 3), color="k", alpha=0.8, label="$-5/3$")
 for i, reg in enumerate([FS, STR, DS]):
     data = the_slopes[(the_times > reg[0]) & (the_times < reg[1]), :]
@@ -51,10 +52,16 @@ for i, reg in enumerate([FS, STR, DS]):
         data_m,
         color=[mandarin, blue, green][i],
         where="mid",
-        label=["Foreshock", "Transition", "Downstream"][i],
+        label=["FS/SW", "STR", "DS"][i],
     )
-plt.legend()
+plt.axvline(10 ** -2.5, ls="-.", label=r"$1/\rho_i$", color="k")
+plt.axvline(10 ** -1.9, ls="--", label=r"$1/d_i$", color="k")
+plt.axvline(10 ** -0.3, ls="-", label=r"$1/d_e\approx1/\rho_e$", color="k")
+plt.ylabel(rf"Slope ($\theta_{{Bn}}=17^\circ$)")
+plt.xlabel("$k$ $[km^{-1}]$")
+plt.legend(loc="lower left", fontsize=8)
 plt.xscale("log")
-
+plt.grid(False)
 plt.tight_layout()
+plt.savefig(join(get_path(__file__), "20200320_slope_avg.pdf"))
 plt.show()

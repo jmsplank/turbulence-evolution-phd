@@ -14,9 +14,10 @@ path_13 = gen_path("20180313")
 path_16 = gen_path("20180316")
 path_18 = gen_path("20200318")
 
-fig, ax = plt.subplots(2, 1, sharex=True)
+fig, ax = plt.subplots(2, 1, sharex=True, figsize=(6, 4))
+# ax = [ax]
 
-for i, path in enumerate([path_13, path_16]):
+for i, path in enumerate([path_16, path_18]):
     slopes = np.load(path("mag_spec/slope_interp.npy"))
     k = np.load(path("mag_spec/x_interp.npy"))
     k = 10 ** k
@@ -58,18 +59,40 @@ for i, path in enumerate([path_13, path_16]):
             slope.mean(axis=0),
             label=summary["sections"]["label"][region],
             where="mid",
-            color=[red, green, blue, mandarin][4 - (len(sections) - 1) :][region],
+            color=[green, blue, mandarin][region]
+            if i == 0
+            else [blue, mandarin][region],
         )
 
+    rhoi = ax[i].axvline(
+        10 ** [-2.25, -2.5][i],
+        ls="-.",
+        label=r"$1/\rho_i$",
+        color="k",
+    )
+    di = ax[i].axvline(
+        10 ** [-1.85, -1.95][i],
+        ls="--",
+        label=r"$1/d_i$",
+        color="k",
+    )
+    rhod = ax[i].axvline(
+        10 ** [-0.15, -0.25][i],
+        ls="-",
+        label=r"$1/d_e\approx1/\rho_e$",
+        color="k",
+    )
+
     ax[i].set_xscale("log")
-    ax[i].legend(loc="lower left", fontsize=8)
+    ax[i].legend(loc="lower left", fontsize=6)
     ax[i].set_ylabel(rf"Slope ($\theta_{{Bn}}={summary['theta_Bn']:02.0f}^\circ$)")
     ax[i].grid(False)
     ax[i].set_ylim((-7.8, 0.5))
+    ax[i].set_xlim((k[0], k[-1]))
 
 ax[-1].set_xlabel("$k$ $[km^{-1}]$")
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-plt.savefig(gen_path("plots")("slope_averages.png"))
+plt.savefig(gen_path("plots")("Appendix_slope_avg.pdf"))
 plt.show()

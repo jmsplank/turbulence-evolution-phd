@@ -48,7 +48,7 @@ slopes_all = slopes_all[slc]
 times_all = times_all[slc]
 k_extent_all = k_extent_all[slc]
 lims_all = lims_all[slc]
-print([len(a) for a in lims_all])
+print(sum([len(a) for a in lims_all]))
 
 for i in range(len(start)):
     ax[0].plot(
