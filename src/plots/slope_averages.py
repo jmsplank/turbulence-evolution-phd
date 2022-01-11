@@ -84,7 +84,7 @@ for i, path in enumerate([path_16, path_18]):
     )
 
     ax[i].set_xscale("log")
-    ax[i].legend(loc="lower left", fontsize=6)
+    # ax[i].legend(loc="lower left", fontsize=6)
     ax[i].set_ylabel(rf"Slope ($\theta_{{Bn}}={summary['theta_Bn']:02.0f}^\circ$)")
     ax[i].grid(False)
     ax[i].set_ylim((-7.8, 0.5))

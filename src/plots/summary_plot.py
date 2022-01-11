@@ -7,6 +7,7 @@ from os.path import join
 import json
 from datetime import datetime as dt
 from matplotlib.colors import LogNorm
+from matplotlib.ticker import MultipleLocator
 
 # import pybowshock as pybs
 
@@ -33,7 +34,15 @@ espec_i_time = join(fpi, "time_energyspectr_omni_i.npy")
 espec_i_bins = join(fpi, "bins_energyspectr_omni_i.npy")
 
 rows = 5
-fig, ax = plt.subplots(rows, 3, figsize=(10, 10 * (9 / 16)))
+fig, ax = plt.subplots(
+    rows, 4, figsize=(10, 10 * (9 / 16)), gridspec_kw={"width_ratios": [1, 1, 1, 0.05]}
+)
+
+# for shock, path in enumerate([path_13, path_16, path_18]):
+#     B_time = np.load(path(mag_time))
+#     print(
+#         f"& {dt.utcfromtimestamp(B_time[0]):%Y/%m/%d %H:%M:%S} & {dt.utcfromtimestamp(B_time[-1]):%Y/%m/%d %H:%M:%S}"
+#     )
 
 for shock, path in enumerate([path_13, path_16, path_18]):
     B = np.load(path(mag))
@@ -65,7 +74,7 @@ for shock, path in enumerate([path_13, path_16, path_18]):
     ax[3, shock].plot(Nd_i_time, Nd_i, label="$n_i$ $[cm^{-3}]$")
     ax[3, shock].plot(Nd_e_time, Nd_e, label="$n_e$ $[cm^{-3}]$")
 
-    ax[4, shock].pcolormesh(
+    im = ax[4, shock].pcolormesh(
         Espec_i_time[::10],
         Espec_i_bins,
         Espec_i.T[:, ::10],
@@ -74,10 +83,6 @@ for shock, path in enumerate([path_13, path_16, path_18]):
         shading="nearest",
     )
     ax[4, shock].set_yscale("log")
-
-    ax[1, shock].legend(fontsize=8, loc="upper right")
-    ax[2, shock].legend(fontsize=8, loc="lower left")
-    ax[3, shock].legend(fontsize=8, loc="upper right")
 
     ax[1, shock].get_shared_x_axes().join(ax[0, shock], ax[1, shock])
     ax[2, shock].get_shared_x_axes().join(ax[0, shock], ax[2, shock])
@@ -90,6 +95,7 @@ for shock, path in enumerate([path_13, path_16, path_18]):
     values = values[values % 300 == 0]
     for i in range(rows):
         ax[i, shock].set_xticks(values)
+        ax[i, shock].xaxis.set_minor_locator(MultipleLocator(60))
         # ax[i, shock].grid(None)
 
     ax[-1, shock].set_xticklabels([fmt(lab) for lab in values])
@@ -106,6 +112,13 @@ for i in range(rows):
     plt.setp(ax[i, 1].get_yticklabels(), visible=False)
     plt.setp(ax[i, 2].get_yticklabels(), visible=False)
 
+for i in range(rows - 1):
+    ax[i, -1].axis("off")
+
+cbar = plt.colorbar(im, cax=ax[-1, -1])
+cbar.set_ticks([1e4, 1e6, 1e8])
+cbar.set_label("$E_i$\n$\left[\\frac{keV}{cm^2\, s\, sr\, keV}\\right]$")
+
 ax[0, 0].set_ylim((0, 50))
 ax[1, 0].set_ylim((-45, 45))
 ax[2, 0].set_ylim((-700, 300))
@@ -118,12 +131,15 @@ ax[0, 0].set_ylabel("$|B|$ [$nT$]")
 ax[1, 0].set_ylabel("$B$ [$nT$]")
 ax[2, 0].set_ylabel("$v_i$ [$kms^{-1}$]")
 ax[3, 0].set_ylabel("$n$ [$cm^{-3}$]")
-ax[4, 0].set_ylabel("$E_i$\n$\left[\\frac{keV}{cm^2\, s\, sr\, keV}\\right]$")
+ax[4, 0].set_ylabel("$eV$")
 
 ax[-1, 0].set_xlabel("13 Mar 2018")
 ax[-1, 1].set_xlabel("16 Mar 2018")
 ax[-1, 2].set_xlabel("18 Mar 2020")
 
+ax[1, -2].legend(fontsize=8, loc="upper right")
+ax[2, -2].legend(fontsize=8, loc="upper right")
+ax[3, -2].legend(fontsize=8, loc="upper right")
 
 plt.tight_layout()
 plt.subplots_adjust(wspace=0.05, hspace=0)
