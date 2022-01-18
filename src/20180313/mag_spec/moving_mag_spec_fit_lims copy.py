@@ -222,7 +222,7 @@ for bin in tqdm(bin_starts):
     yy = f(xx)
 
     INTERP_MIN = min(kk)
-    print(10 ** INTERP_MIN / (2 * np.pi / meanv))
+    # print(10 ** INTERP_MIN / (2 * np.pi / meanv))
     INTERP_MAX = max(kk)
     x_interp = np.linspace(
         INTERP_MIN,
@@ -275,47 +275,70 @@ for bin in tqdm(bin_starts):
     # Unscale by kolmogorov
     y = y / (k ** (5 / 3))
 
-    fig, ax = plt.subplots(
-        2, 1, figsize=(6, 5), sharex=True, gridspec_kw={"height_ratios": [75, 25]}
-    )
-    ax[0].loglog(k, y, color="k", label="Magnetic spectrum")
-    xx = 10 ** xx
-    YY = 10 ** YY
-    ax[0].loglog(xx, YY / (xx ** (5 / 3)), color=mandarin, ls="--", label="MARS fit")
-    lims = (1e-16, 1)
-    for subplot in [0, 1]:
-        for ks in range(len(slope_k)):
-            ax[subplot].axvline(slope_k[ks], color=mandarin, alpha=0.4)
-        ax[subplot].axvline(ion_lim, color=red, label=r"Ion limit ($\rho_i$)")
-        ax[subplot].axvline(ion_lims[1], color=red, ls="--", label=r"Ion limit ($d_i$)")
-        ax[subplot].axvline(electron_lim, color=green, label="Electron limit")
-        ax[subplot].axvspan(
-            10, k[-1], fc="k", ec=None, alpha=0.1, label="Instrument noise"
+    example_bin = 3949024
+    if bin == example_bin:
+        example_ts = int(big_time[example_bin])
+        example_dt = f"{dt.utcfromtimestamp(example_ts):%Y/%m/%d %H:%M:%S}"
+        with open(f"{dirpath}/summary.json", "r") as file:
+            summary = json.load(file)
+            summary["example_plot_time"]["timestamp"] = example_ts
+            summary["example_plot_time"]["datetime"] = example_dt
+        with open(f"{dirpath}/summary.json", "w") as file:
+            json.dump(
+                summary,
+                file,
+                indent=4,
+                sort_keys=True,
+                separators=(", ", ": "),
+                ensure_ascii=False,
+            )
+
+        fig, ax = plt.subplots(
+            2, 1, figsize=(6, 5), sharex=True, gridspec_kw={"height_ratios": [75, 25]}
         )
-        ax[subplot].grid(False)
+        ax[0].loglog(k, y, color="k", label="Magnetic spectrum")
+        xx = 10 ** xx
+        YY = 10 ** YY
+        ax[0].loglog(
+            xx, YY / (xx ** (5 / 3)), color=mandarin, ls="--", label="MARS fit"
+        )
+        lims = (1e-16, 1)
+        for subplot in [0, 1]:
+            for ks in range(len(slope_k)):
+                ax[subplot].axvline(slope_k[ks], color=mandarin, alpha=0.4)
+            ax[subplot].axvline(ion_lim, color=red, label=r"$\rho_i$")
+            ax[subplot].axvline(ion_lims[1], color=red, ls="--", label=r"$d_i$")
+            ax[subplot].axvline(electron_lim, color=green, label=r"$\rho_e$")
+            ax[subplot].axvspan(10, k[-1], fc="k", ec=None, alpha=0.1, label="Noise")
+            ax[subplot].grid(False)
 
-    ax[0].set_ylim(lims)
-    ax[0].set_xlim((k[0], k[-1]))
-    ax[0].legend(loc="upper right", fontsize=10)
+        ax[0].set_ylim(lims)
+        ax[0].set_xlim((k[0], k[-1]))
+        ax[0].legend(loc="upper right", fontsize=10)
 
-    plot_slope = -5 / 3
-    ax[1].loglog(
-        k,
-        y * (k ** -plot_slope),
-        color="k",
-        label="Magnetic spectrum",
-    )
-    ax[1].set_xlim((k[0], k[-1]))
+        plot_slope = -5 / 3
+        # ax[1].loglog(
+        #     k,
+        #     y * (k ** (5 / 3)),
+        #     color="k",
+        #     label="Magnetic spectrum",
+        # )
+        ax[1].loglog(xx, YY, color=mandarin, ls="--", label="MARS fit", lw=2)
+        ax[1].set_xlim((k[0], k[-1]))
 
-    ax[0].set_ylabel(r"Magnetic spectrum [$nT^2Hz^{-1}$]")
-    ax[1].set_ylabel(rf"Spectrum $\times k^{{5/3}}$")
-    ax[1].set_xlabel("$k$ [$km^{-1}$]")
+        ax[0].set_ylabel(r"Magnetic spectrum [$nT^2Hz^{-1}$]")
+        ax[1].set_ylabel(rf"Spectrum $\times k^{{5/3}}$")
+        ax[1].set_xlabel("$k$ [$km^{-1}$]")
 
-    plt.tight_layout()
-    plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig(f"{path}/anim/{bin}.png", dpi=300)
-    plt.clf()
-    del fig, ax
+        ax[0].set_title(example_dt)
+
+        plt.tight_layout()
+        plt.subplots_adjust(wspace=0, hspace=0)
+        plt.savefig(f"{path}/example_{bin}_{int(times[-1])}.png", dpi=300)
+        plt.savefig(f"{path}/example_{bin}_{int(times[-1])}.pdf", dpi=300)
+        plt.show()
+        plt.clf()
+        del fig, ax
 
     del y
     del Y

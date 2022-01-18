@@ -32,6 +32,8 @@ for i in range(len(slopes)):
 FS = [the_times[0], 1584735999]
 STR = [1584735999, 1584736664]
 DS = [1584736664, 1584737805]
+
+print(FS, STR, DS)
 fig = plt.figure(figsize=(6, 4))
 plt.plot(ks, np.ones_like(ks) * (-5 / 3), color="k", alpha=0.8, label="$-5/3$")
 for i, reg in enumerate([FS, STR, DS]):

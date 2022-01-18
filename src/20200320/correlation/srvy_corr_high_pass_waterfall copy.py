@@ -128,25 +128,47 @@ for Tmax in tqdm(TmaxA):
 ##### PLOTTING
 
 
-fig = plt.figure()
+fig = plt.figure(figsize=(9, 6))
 # gs = fig.add_gridspec(2, 3, hspace=0, top=0.98, bottom=0.54)
-gs = fig.add_gridspec(2, 3)
-ax1 = fig.add_subplot(gs[0, :])
+gs = fig.add_gridspec(
+    2,
+    1,
+    left=0.1,
+    right=0.44,
+    hspace=0.3,
+    top=0.95,
+    bottom=0.1,
+)
+gs2 = fig.add_gridspec(
+    2,
+    2,
+    width_ratios=[1, 0.1],
+    left=0.54,
+    right=0.88,
+    wspace=0.05,
+    hspace=0.3,
+    top=0.95,
+    bottom=0.1,
+)
+# ax1 = fig.add_subplot(gs[0, :])
 # ax2 = fig.add_subplot(gs[1])
 # gs2 = fig.add_gridspec(1, 2, top=0.45, bottom=0.09, wspace=0.18)
-ax3 = fig.add_subplot(gs[1, 0])
-ax4 = fig.add_subplot(gs[1, 1])
-ax5 = fig.add_subplot(gs[1, 2])
+ax3 = fig.add_subplot(gs[0])  # top left
+ax6 = fig.add_subplot(gs[1])  # bottom left
 
-ax1.plot(time, np.linalg.norm(DATA, axis=1))
-rng = np.arange(int(time[0]), time[-1])
-rng = rng[rng % 600 == 0]  # 10 minutes
-rng_dt = [dt.utcfromtimestamp(x) for x in rng]
-rng_str = [dt.strftime(x, "%H:%M") for x in rng_dt]
-ax1.set_xticks(rng)
-ax1.set_xticklabels(rng_str)
+ax4 = fig.add_subplot(gs2[0, 0])
+ax5 = fig.add_subplot(gs2[1, 0])
 
-print("hi")
+cbax1 = fig.add_subplot(gs2[0, 1])
+cbax2 = fig.add_subplot(gs2[1, 1])
+
+# ax1.plot(time, np.linalg.norm(DATA, axis=1))
+# rng = np.arange(int(time[0]), time[-1])
+# rng = rng[rng % 600 == 0]  # 10 minutes
+# rng_dt = [dt.utcfromtimestamp(x) for x in rng]
+# rng_str = [dt.strftime(x, "%H:%M") for x in rng_dt]
+# ax1.set_xticks(rng)
+# ax1.set_xticklabels(rng_str)
 
 X = []
 Y = []
@@ -179,24 +201,43 @@ mean_v = np.array([vx_i[opacity[i] : opacity[i + 1]].mean() for i in range(HSLIC
 opacity_B = mean_B - mean_B.min()
 opacity_B = opacity_B / opacity_B.max()
 cmap = get_cmap("custom_rgb")
-for i in range(ZZ.shape[1]):
-    ax3.plot(
+for i in range(0, ZZ.shape[1]):
+    im = ax3.plot(
         YY[:, i],
         ZZ[:, i],
         color=cmap(opacity_B[i]),
+        alpha=0.4,
     )
+sm = plt.cm.ScalarMappable(
+    cmap=cmap,
+    norm=plt.Normalize(
+        vmin=min(mean_B),
+        vmax=max(mean_B),
+    ),
+)
+cb = plt.colorbar(sm, label="$|B|$ [nT]", cax=cbax1)
 ax3.set_yscale("log")
 ax3.set_xscale("log")
-ax3.set_xlabel("$T_{{MAX}}\quad[s]$")
+ax3.set_xlabel("$T_{{max}}\quad[s]$")
 ax3.set_ylabel("$\lambda_c\quad[d_i]$")
+
+cmap2 = get_cmap("viridis")
+sm2 = plt.cm.ScalarMappable(
+    cmap=cmap2,
+    norm=plt.Normalize(
+        vmin=YY[0, 0],
+        vmax=YY[-1, 0],
+    ),
+)
+cb2 = plt.colorbar(sm2, label="$T_{max}\quad[s]$", cax=cbax2)
 
 for i in range(VSLICE):
     ax4.scatter(
         mean_B,
         ZZ[i, :],
-        color=cmap(np.linspace(0, 1, VSLICE)[i]),
+        color=cmap2(np.linspace(0, 1, VSLICE)[i]),
         marker="x",
-        alpha=0.2,
+        alpha=0.6,
     )
 
 
@@ -208,11 +249,11 @@ def remnan(a, b):
     return a[np.isfinite(b)]
 
 
-for i in [VSLICE // 4, VSLICE // 2, 3 * VSLICE // 4]:
+for i in [VSLICE // 4, VSLICE // 2, VSLICE - 2]:
     ax4.scatter(
         mean_B,
         ZZ[i, :],
-        color=cmap(np.linspace(0, 1, VSLICE)[i]),
+        color=cmap2(np.linspace(0, 1, VSLICE)[i]),
         marker="x",
     )
     popt, _ = curve_fit(
@@ -226,29 +267,29 @@ for i in [VSLICE // 4, VSLICE // 2, 3 * VSLICE // 4]:
     ax4.plot(
         sorted(mean_B),
         [x for _, x in sorted(zip(mean_B, line(mean_B, *popt)))],
-        color=cmap(np.linspace(0, 1, VSLICE)[i]),
+        color=cmap2(np.linspace(0, 1, VSLICE)[i]),
         label=f"{popt[0]:0.2f}",
     )
 
-ax4.set_xlabel("$|B|$")
+ax4.set_xlabel(r"$|B|\quad[nT]$")
 ax4.set_ylabel("$\lambda_c$")
-ax4.legend()
+ax4.legend(title="Slope", fontsize=8)
 
 
 for i in range(VSLICE):
     ax5.scatter(
         mean_v,
         ZZ[i, :],
-        color=cmap(np.linspace(0, 1, VSLICE)[i]),
+        color=cmap2(np.linspace(0, 1, VSLICE)[i]),
         marker="x",
         alpha=0.2,
     )
 
-for i in [VSLICE // 4, VSLICE // 2, 3 * VSLICE // 4]:
+for i in [VSLICE // 4, VSLICE // 2, VSLICE - 2]:
     ax5.scatter(
         mean_v,
         ZZ[i, :],
-        color=cmap(np.linspace(0, 1, VSLICE)[i]),
+        color=cmap2(np.linspace(0, 1, VSLICE)[i]),
         marker="x",
     )
     popt, _ = curve_fit(
@@ -262,15 +303,105 @@ for i in [VSLICE // 4, VSLICE // 2, 3 * VSLICE // 4]:
     ax5.plot(
         sorted(mean_v),
         [x for _, x in sorted(zip(mean_v, line(mean_v, *popt)))],
-        color=cmap(np.linspace(0, 1, VSLICE)[i]),
+        color=cmap2(np.linspace(0, 1, VSLICE)[i]),
         label=f"{popt[0]:0.2e}",
     )
 
 
-ax5.set_xlabel("$V_x$")
+ax5.set_xlabel(r"$|v_x|\quad[km\,s^{-1}]$")
 ax5.set_ylabel("$\lambda_c$")
-ax5.legend()
+ax5.legend(title="Slope", fontsize=8)
 
 
-plt.tight_layout()
+# ax7 = ax6.twinx()
+for i in range(VSLICE):
+    poptv, _ = curve_fit(
+        line,
+        remnan(mean_v, mean_v * ZZ[i, :]),
+        remnan(
+            ZZ[i, :],
+            mean_v * ZZ[i, :],
+        ),
+    )
+    # poptb, _ = curve_fit(
+    #     line,
+    #     remnan(mean_B, mean_B * ZZ[i, :]),
+    #     remnan(
+    #         ZZ[i, :],
+    #         mean_B * ZZ[i, :],
+    #     ),
+    # )
+    if i == 0:
+        vxlab = ax6.scatter(
+            YY[i, 0],
+            poptv[0],
+            color="k",
+            marker="x",
+            label="$v_x$ slope",
+        )
+        # modblab = ax7.scatter(
+        #     YY[i, 0],
+        #     poptb[0],
+        #     color="k",
+        #     marker="o",
+        #     label="$|B|$ slope",
+        #     facecolors="none",
+        #     edgecolors="k",
+        # )
+    else:
+        ax6.scatter(
+            YY[i, 0],
+            poptv[0],
+            color="k",
+            marker="x",
+        )
+        # ax7.scatter(
+        #     YY[i, 0],
+        #     poptb[0],
+        #     color="k",
+        #     marker="o",
+        #     facecolors="none",
+        #     edgecolors="k",
+        # )
+
+# lns = [vxlab, modblab]
+# labs = [l.get_label() for l in lns]
+# ax6.legend(lns, labs, loc=0, fontsize=8)
+ax6.set_xscale("log")
+ax6.set_ylabel("$v_x$ slope")
+ax6.set_xlabel("$T_{max}\quad[s]$")
+ax6.autoscale(enable=True, axis="y")
+
+# ax7.set_ylabel("$|B|$ slope")
+# ax7.autoscale(enable=True, axis="y")
+# ax7.grid(False)
+
+
+def align_yaxis(axis1, axis2):
+    y_lims = np.array([ax.get_ylim() for ax in [axis1, axis2]])
+
+    # force 0 to appear on both axes, comment if don't need
+    y_lims[:, 0] = y_lims[:, 0].clip(None, 0)
+    y_lims[:, 1] = y_lims[:, 1].clip(0, None)
+
+    # normalize both axes
+    y_mags = (y_lims[:, 1] - y_lims[:, 0]).reshape(len(y_lims), 1)
+    y_lims_normalized = y_lims / y_mags
+
+    # find combined range
+    y_new_lims_normalized = np.array(
+        [np.min(y_lims_normalized), np.max(y_lims_normalized)]
+    )
+
+    # denormalize combined range to get new axes
+    new_lim1, new_lim2 = y_new_lims_normalized * y_mags
+    axis1.set_ylim(new_lim1)
+    axis2.set_ylim(new_lim2)
+
+
+# align_yaxis(ax6, ax7)
+
+# plt.tight_layout()
+plt.savefig(save_path("correlation_statsmadness.pdf"), dpi=300)
+plt.savefig(save_path("correlation_statsmadness.png"), dpi=300)
 plt.show()

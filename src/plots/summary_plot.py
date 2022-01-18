@@ -112,6 +112,11 @@ for i in range(rows):
     plt.setp(ax[i, 1].get_yticklabels(), visible=False)
     plt.setp(ax[i, 2].get_yticklabels(), visible=False)
 
+with open(path_13("summary.json"), "r") as file:
+    sum13 = json.load(file)
+for i in range(rows):
+    ax[i, 0].axvline(sum13["example_plot_time"]["timestamp"], color="k")
+
 for i in range(rows - 1):
     ax[i, -1].axis("off")
 

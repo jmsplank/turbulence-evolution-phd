@@ -1,21 +1,47 @@
 {
-  "shock": { "timestamp": 1520916732 },
-  "trange": ["2018-03-13/04:41:34", "2018-03-13/04:55:34"],
-  "vsw": { "units": "km/s", "value": 378.3370361328125 },
-  "nsw": { "units": "cm^-3", "value": 9.94007 },
-  "BX": -0.43,
-  "BY": 4.2,
-  "BZ": 0.12,
-  "Speed": 415.6,
-  "Plasma_beta": 1.65,
-  "Upstream_B": 2.99,
-  "Proton_Density": 7.56,
-  "Alfven_mach_number": 9.3,
-  "Magnetosonic_Mach": 6.0,
-  "theta_Bn": 67.7,
-  "SW": { "timestamp": 1520916781 },
-  "sections": {
-    "timestamp": [1520916422, 1520916708, 1520916789],
-    "label": ["DS 2", "DS 1", "STR", "SW"]
-  }
+    "Alfven_mach_number": 9.3, 
+    "BX": -0.43, 
+    "BY": 4.2, 
+    "BZ": 0.12, 
+    "Magnetosonic_Mach": 6.0, 
+    "Plasma_beta": 1.65, 
+    "Proton_Density": 7.56, 
+    "SW": {
+        "timestamp": 1520916781
+    }, 
+    "Speed": 415.6, 
+    "Upstream_B": 2.99, 
+    "example_plot_time": {
+        "datetime": "2018/03/13 04:49:35", 
+        "timestamp": 1520916575
+    }, 
+    "nsw": {
+        "units": "cm^-3", 
+        "value": 9.94007
+    }, 
+    "sections": {
+        "label": [
+            "DS 2", 
+            "DS 1", 
+            "STR", 
+            "SW"
+        ], 
+        "timestamp": [
+            1520916422, 
+            1520916708, 
+            1520916789
+        ]
+    }, 
+    "shock": {
+        "timestamp": 1520916732
+    }, 
+    "theta_Bn": 67.7, 
+    "trange": [
+        "2018-03-13/04:41:34", 
+        "2018-03-13/04:55:34"
+    ], 
+    "vsw": {
+        "units": "km/s", 
+        "value": 378.3370361328125
+    }
 }
