@@ -136,7 +136,7 @@ ax[0, 0].set_ylabel("$|B|$ [$nT$]")
 ax[1, 0].set_ylabel("$B$ [$nT$]")
 ax[2, 0].set_ylabel("$v_i$ [$kms^{-1}$]")
 ax[3, 0].set_ylabel("$n$ [$cm^{-3}$]")
-ax[4, 0].set_ylabel("$eV$")
+ax[4, 0].set_ylabel("$E$ $[eV]$")
 
 ax[-1, 0].set_xlabel("13 Mar 2018")
 ax[-1, 1].set_xlabel("16 Mar 2018")

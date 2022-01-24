@@ -114,7 +114,7 @@ ax[0].set_ylabel("$|B|$ [$nT$]")
 ax[1].set_ylabel("$B$ GSE\n[$nT$]")
 ax[2].set_ylabel("$v_i$ GSE\n[$kms^{-1}$]")
 ax[3].set_ylabel("$n_{i,e}$\n[$cm^{-3}$]")
-ax[4].set_ylabel("$eV$")
+ax[4].set_ylabel("$E$ $[eV]$")
 
 ax[-1].set_xlabel(f"20 Mar 2020")
 

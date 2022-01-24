@@ -32,7 +32,7 @@ for i, event in enumerate(files):
     tab = [
         ["filename", event],
         ["start/end", f"{start} -> {end}"],
-        ["format", "mach & beta"],
-        ["data", f"{genstat(data.ma)} & {genstat(data.beta)}"],
+        ["format", "v0 | mach | beta"],
+        ["data", f"{genstat(data.v)} & {genstat(data.ma)} & {genstat(data.beta)}"],
     ]
     print(tabulate(tab, tablefmt="fancy_grid"))
