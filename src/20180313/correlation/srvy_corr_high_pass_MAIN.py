@@ -142,8 +142,8 @@ ax[0, 1].axis("off")
 
 
 ##### ROW 2
-PLOT_MIN = 1
-PLOT_MAX = 50
+PLOT_MIN = np.min([lambdas[l].min() for l in lambdas.keys()])
+PLOT_MAX = np.max([lambdas[l].max() for l in lambdas.keys()])
 
 
 spacing = np.diff(np.log10(TmaxA))[0] / 2
@@ -189,7 +189,7 @@ tri_refi, Z_refi = refiner.refine_field(Z, subdiv=3)
 im = ax[1, 0].tricontour(
     tri_refi,
     Z_refi,
-    levels=np.logspace(np.log10(PLOT_MIN), np.log10(PLOT_MAX), 8),
+    levels=np.logspace(np.log10(PLOT_MIN), np.log10(PLOT_MAX), 15),
     linewidths=np.array([2.0, 0.5, 1.0, 0.5]) / 2,
     colors="k",
 )
