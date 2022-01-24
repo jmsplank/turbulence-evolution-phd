@@ -1,21 +1,18 @@
 """20200320 is spread over multiple burst intervals.
 As such, code for this event has to be re-written.
 """
-import numpy as np
+import json
+import os
+import subprocess
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from phdhelper.helpers import override_mpl
 from phdhelper.helpers.os_shortcuts import get_path, new_path
 from phdhelper.physics import lengths
-from phdhelper.helpers.COLOURS import red, green
-import json
-from numpyencoder import NumpyEncoder
 from scipy.interpolate import interp1d
-import pandas as pd
-import os
-import subprocess
 from tqdm import tqdm
-
-from scipy.optimize.optimize import main
 
 override_mpl.override()
 override_mpl.cmaps(name="custom_diverging")
@@ -38,7 +35,8 @@ all_temp_e_time = np.load(fpi_path("time_tempperp_e.npy"))
 
 # SPACING = 9.5  # seconds of data for each window
 SPACING = 16
-td = all_b_time[1] - all_b_time[0]
+# td = all_b_time[1] - all_b_time[0]
+td = 1 / 8192
 
 with open(main_path("summary.json"), "r") as file:
     summary = json.load(file)
@@ -51,28 +49,31 @@ meanv = stats["mean_v"]["value"]
 burst_start = summary["burst_start"]
 burst_stop = summary["burst_stop"]
 
-slopes_all = []
-times_all = []
-k_extent_all = []
-lims_all = []
+slopes_all = []  # All slopes for all bursts
+times_all = []  # All times for "    "
+k_extent_all = []  # All k for "    "
+lims_all = []  # All rho, d, e for "     "
 
 
-for burst in range(len(burst_start)):
+for burst in range(len(burst_start)):  # Loop over burst intervals
     burst_b_time = all_b_time[burst_start[burst] : burst_stop[burst]]
     windows = np.arange(burst_b_time[0], burst_b_time[-1], SPACING)
     print(f"Burst {burst+1} has {len(windows)} windows.")
-    slopes_burst = []
-    times_burst = []
-    lims_burst = []
-    for win in tqdm(range(len(windows) - 1)):
-        data = all_b[(all_b_time >= windows[win]) & (all_b_time < windows[win + 1]), :]
+    slopes_burst = []  # All slopes for burst
+    times_burst = []  # all Time midpoints for burst
+    lims_burst = []  # all rho, d, e for each burst
+    for win in tqdm(range(len(windows) - 1)):  # Loop over each window in burst
+        data = all_b[
+            (all_b_time >= windows[win]) & (all_b_time < windows[win + 1]), :
+        ]  # Subset B
         time = all_b_time[
             (all_b_time >= windows[win]) & (all_b_time < windows[win + 1])
-        ]
-        Y = {}
+        ]  # Subset Time
+        Y = {}  # Hold compoenents of fft (x,y,z)
         for i in range(3):
             # log.info(f"index {i}")
             B = data[:, i] * 1e-9
+            print(len(B))
             # log.info("Scaling mean")
             B -= B.mean()
 
@@ -85,9 +86,10 @@ for burst in range(len(burst_start)):
             # log.info("Obtaining power spectrum")
             Y[["x", "y", "z"][i]] = (np.power(np.abs(Yi), 2) * 1e9 * td)[freq > 0]
         # log.info("Summing components")
-        y = np.sum([Y[i] for i in ["x", "y", "z"]], axis=0)
-        k = freq[freq > 0] * 2 * np.pi / meanv
+        y = np.sum([Y[i] for i in ["x", "y", "z"]], axis=0)  # Combine components
+        k = freq[freq > 0] * 2 * np.pi / meanv  # Freq -> wavenumber
 
+        # Subset number density (i & e), perpendicular temperature (i, e)
         n_i = all_n_i[(all_n_i_time >= time[0]) & (all_n_i_time <= time[-1])]
         n_e = all_n_e[(all_n_e_time >= time[0]) & (all_n_e_time <= time[-1])]
         temp_i = all_temp_i[
@@ -112,10 +114,11 @@ for burst in range(len(burst_start)):
             B_field=data,
         )
         lims_burst.append(np.array([*ion_lims, electron_lims[0]]))
-        instrument_mask = k <= 10
-        kk = np.log10(k[instrument_mask])
+        instrument_mask = k <= 10  # Remove influence of instrument noise
+        kk = np.log10(k[instrument_mask])  # Log scale data
         yy = np.log10(y[instrument_mask])
 
+        # Linear interpolation of log scaled data (regular spacing)
         f = interp1d(kk, yy)
         xx = np.log10(np.logspace(kk[0], kk[-1], num=1000))
         yy = f(xx)

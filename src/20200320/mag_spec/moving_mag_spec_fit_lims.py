@@ -114,7 +114,8 @@ log.info("Loading data")
 big_data = np.load(f"{dirpath}/data/fsm/data.npy")
 log.info("Loading time")
 big_time = np.load(f"{dirpath}/data/fsm/time.npy")
-td = big_time[1] - big_time[0]
+# td = big_time[1] - big_time[0]
+td = 1 / 8192
 
 log.info("Loading temp_perp")
 big_temp_perp_e = np.load(f"{dirpath}/data/fpi/data_tempperp_e.npy")
