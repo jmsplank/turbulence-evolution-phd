@@ -122,7 +122,7 @@ for i in range(rows - 1):
 
 cbar = plt.colorbar(im, cax=ax[-1, -1])
 cbar.set_ticks([1e4, 1e6, 1e8])
-cbar.set_label("$E_i$\n$\left[\\frac{keV}{cm^2\, s\, sr\, keV}\\right]$")
+cbar.set_label("$DEF$  $\left[\\frac{keV}{cm^2\, s\, sr\, keV}\\right]$")
 
 ax[0, 0].set_ylim((0, 50))
 ax[1, 0].set_ylim((-45, 45))
@@ -136,11 +136,15 @@ ax[0, 0].set_ylabel("$|B|$ [$nT$]")
 ax[1, 0].set_ylabel("$B$ [$nT$]")
 ax[2, 0].set_ylabel("$v_i$ [$kms^{-1}$]")
 ax[3, 0].set_ylabel("$n$ [$cm^{-3}$]")
-ax[4, 0].set_ylabel("$E$ $[eV]$")
+ax[4, 0].set_ylabel("$E_i$ $[eV]$")
 
 ax[-1, 0].set_xlabel("13 Mar 2018")
 ax[-1, 1].set_xlabel("16 Mar 2018")
 ax[-1, 2].set_xlabel("18 Mar 2020")
+
+ax[0, 0].set_title("A")
+ax[0, 1].set_title("B")
+ax[0, 2].set_title("C")
 
 ax[1, -2].legend(fontsize=8, loc="upper right")
 ax[2, -2].legend(fontsize=8, loc="upper right")

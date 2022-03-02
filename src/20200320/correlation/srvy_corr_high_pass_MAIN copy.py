@@ -52,8 +52,8 @@ override_mpl.override("|krgb")
 def main():
     save_path = new_path(get_path(__file__))
     data_path = new_path(get_path(__file__, ".."), "data")
-    B = np.load(data_path("fgm/data.npy"))
-    B_time = np.load(data_path("fgm/time.npy"))
+    B = np.load(data_path("fsm/data.npy"))
+    B_time = np.load(data_path("fsm/time.npy"))
 
     d_i_raw = np.load(save_path("d_i.npy"))
     d_i_time_raw = np.load(data_path("fpi/time_numberdensity_i.npy"))
@@ -107,11 +107,12 @@ def main():
     # Tmax = 40  # Maximum scale size in seconds
     # Fcrit = 1 / Tmax  # Critical frequency
 
-    TmaxA = np.logspace(np.log10(0.5), np.log10((time[-1] - time[0]) / 2 - 1), 30)
+    TmaxA = np.logspace(np.log10(0.5), np.log10((time[-1] - time[0]) / 4 - 1), 30)
     lambdas = {}
     lambdas_times = {}
     for Tmax in tqdm(TmaxA):
         Fcrit = 1 / Tmax
+        # print(Fcrit)
         sos = butter(
             10,
             Fcrit,
@@ -128,7 +129,8 @@ def main():
         # print(f"{d_i.shape=}")
         # print(f"{vx_i.shape=}")
 
-        CHUNK_LEN = int(max(Tmax, (time[-1] - time[0]) / 30) // td)  # 60s in indices
+        # CHUNK_LEN = int(max(Tmax, (time[-1] - time[0]) / 30) // td)  # 60s in indices
+        CHUNK_LEN = int((2 * Tmax) // td)
         chunk_start = np.arange(0, len(time) - CHUNK_LEN, CHUNK_LEN, dtype=int)
         corr_lens_di = np.empty_like(chunk_start, dtype=float)
         corr_lens_s = np.empty_like(chunk_start, dtype=float)
@@ -182,7 +184,8 @@ def main():
     spacing = np.logspace(
         np.log10(TmaxA[0] - spacing), np.log10(TmaxA[-1] + spacing), TmaxA.size + 1
     )
-    Lspacing = [np.diff(t)[0] for _, t in lambdas_times.items()]
+
+    Lspacing = [abs(t[1] - t[0]) for _, t in lambdas_times.items()]
     Lspacing = [
         np.linspace(t[0] - Lspacing[i], t[-1] + Lspacing[i], t.size + 1)
         for i, (_, t) in enumerate(lambdas_times.items())
@@ -198,7 +201,7 @@ def main():
                 vmax=PLOT_MAX,
             ),
         )
-    plt.colorbar(im, cax=ax[1, 1])
+    plt.colorbar(im, cax=ax[1, 1], label="$\lambda_c\quad[d_i]$")
 
     ##### GEN CONTOUR DATA
     X = []
@@ -214,17 +217,17 @@ def main():
     Z[Z <= 0] = np.min(Z[Z > 0])
 
     ##### CONTOURS
-    tri = Triangulation(X, Y)
-    refiner = UniformTriRefiner(tri)
-    tri_refi, Z_refi = refiner.refine_field(Z, subdiv=3)
-    im = ax[1, 0].tricontour(
-        tri_refi,
-        Z_refi,
-        levels=np.logspace(np.log10(PLOT_MIN), np.log10(PLOT_MAX), 8),
-        linewidths=np.array([2.0, 0.5, 1.0, 0.5]) / 2,
-        colors="k",
-    )
-    plt.colorbar(im, ax[1, 1])
+    # tri = Triangulation(X, Y)
+    # refiner = UniformTriRefiner(tri)
+    # tri_refi, Z_refi = refiner.refine_field(Z, subdiv=3)
+    # im = ax[1, 0].tricontour(
+    #     tri_refi,
+    #     Z_refi,
+    #     levels=np.logspace(np.log10(PLOT_MIN), np.log10(PLOT_MAX), 15),
+    #     linewidths=np.array([2.0, 0.5, 1.0, 0.5]) / 2,
+    #     colors="k",
+    # )
+    # plt.colorbar(im, ax[1, 1])
 
     ax[1, 0].set_yscale("log")
     ax[1, 0].set_xlim((time[0], time[-1]))
@@ -240,8 +243,8 @@ def main():
 
     plt.tight_layout()
     plt.subplots_adjust(hspace=0)
-    # plt.show()
-    plt.savefig(save_path("20200320_corr_len.pdf"), dpi=300)
+    plt.savefig(save_path("20200320_corr.png"), dpi=300)
+    plt.savefig(save_path("20200320_corr.pdf"), dpi=300)
 
 
 if __name__ == "__main__":

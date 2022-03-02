@@ -143,12 +143,12 @@ electron_lim = 1.0 / lengths("e", big_number_density_e, big_temp_perp_e, big_dat
 
 min_freq = ion_lim * 5
 # bin_size = int(1 / (min_freq * td))
-bin_size = int(len(big_time) / N)
+bin_size = int(9 / td)
 
 max_index = len(big_data) - bin_size
 log.info(f"max index: {max_index}")
-bin_starts = np.linspace(0, max_index, N, dtype=int)
-
+bin_starts = np.arange(0, max_index, bin_size, dtype=int)
+print(f"There are {len(bin_starts)} windows")
 grads = []
 times = []
 knots = []
@@ -157,6 +157,7 @@ slope_lims_other = []
 slope_interp = []
 spectra = []
 fsm = []
+
 
 for bin in tqdm(bin_starts):
     Y = {}
@@ -273,7 +274,7 @@ for bin in tqdm(bin_starts):
     # Unscale by kolmogorov
     y = y / (k ** (5 / 3))
 
-    example_bin = 4054400
+    example_bin = 4055040
     if bin == example_bin:
         # example_ts = int(big_time[example_bin])
         # example_dt = f"{dt.utcfromtimestamp(example_ts):%Y/%m/%d %H:%M:%S}"
@@ -299,14 +300,14 @@ for bin in tqdm(bin_starts):
         lims = (1e-16, 1)
         for ks in range(len(slope_k)):
             ax.axvline(slope_k[ks], color=mandarin, alpha=0.4)
-        ax.axvline(ion_lim, color=red, label=r"$\rho_i$")
-        ax.axvline(ion_lims[1], color=red, ls="--", label=r"$d_i$")
-        ax.axvline(electron_lim, color=green, label=r"$\rho_e$")
-        ax.axvspan(10, k[-1], fc="k", ec=None, alpha=0.1, label="Noise")
+        ax.axvline(ion_lim, color=red, label=r"$\rho_i^{-1}$")
+        ax.axvline(ion_lims[1], color=red, ls="--", label=r"$d_i^{-1}$")
+        ax.axvline(electron_lim, color=green, label=r"$\rho_e^{-1}$")
+        # ax.axvspan(10, k[-1], fc="k", ec=None, alpha=0.1, label="Noise")
         ax.grid(False)
 
         ax.set_ylim(lims)
-        ax.set_xlim((k[0], k[-1]))
+        ax.set_xlim((k[0], 10))
 
         ax.set_ylabel(r"Magnetic spectrum [$nT^2Hz^{-1}$]")
         ax.set_xlabel("Wavenumber $k\,[km^{-1}]$")
@@ -374,7 +375,7 @@ ax[0, 1].axis("off")
 
 ax1.plot(big_time, np.linalg.norm(big_data, axis=1))
 
-X = np.linspace(big_time[0], big_time[-1], N + 1)
+X = np.linspace(big_time[0], big_time[bin_starts[-1] + bin_size], len(bin_starts) + 1)
 Y = np.logspace(INTERP_MIN, INTERP_MAX, 33)
 X, Y = np.meshgrid(X, Y)
 
@@ -426,7 +427,7 @@ ax1.tick_params(
 )
 
 ax1.set_ylabel("$|B|$ [$nT$]")
-ax_main.set_ylabel(r"log $\left(k/km^{-1}\right)$")
+ax_main.set_ylabel(r"$k\quad[km^{-1}]$")
 cbar_main.set_ylabel("Slope")
 ax_main.set_xlabel(
     f"Time UTC {dt.strftime(dt.utcfromtimestamp(big_time[0]), r'%d/%m/%Y')} (hh:mm:ss)"
@@ -446,6 +447,6 @@ ax_main.set_ylim((10 ** INTERP_MIN, 10 ** INTERP_MAX))
 
 plt.tight_layout()
 plt.subplots_adjust(wspace=0.02, hspace=0)
-plt.savefig(f"{path}/poster_MAIN_PLOT.png", dpi=300)
-plt.savefig(f"{path}/poster_MAIN_PLOT.pdf", dpi=300)
+plt.savefig(f"{path}/{dt.utcfromtimestamp(big_time[0]):%Y%m%d}_slopes.png", dpi=300)
+plt.savefig(f"{path}/{dt.utcfromtimestamp(big_time[0]):%Y%m%d}_slopes.pdf", dpi=300)
 # plt.show()

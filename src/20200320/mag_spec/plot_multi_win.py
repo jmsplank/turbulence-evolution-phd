@@ -6,7 +6,7 @@ from phdhelper.helpers.COLOURS import red
 import json
 from datetime import datetime as dt
 
-override_mpl.override()
+override_mpl.override("|krgb")
 override_mpl.cmaps()
 
 path = new_path(get_path(__file__))
@@ -24,10 +24,19 @@ times_all = np.load(path("times_all.npy"), allow_pickle=True)
 k_extent_all = np.load(path("k_extent_all.npy"), allow_pickle=True)
 lims_all = np.load(path("lims_all.npy"), allow_pickle=True)
 
-fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 8 * (9 / 16)))
+fig, ax = plt.subplots(
+    2,
+    2,
+    figsize=(6, 4),
+    gridspec_kw={"width_ratios": [98, 3], "height_ratios": [30, 70]},
+)
 
-ax[1].set_yscale("log")
-ax2 = ax[1].twinx()
+ax1 = ax[0, 0]
+ax[0, 1].axis("off")
+ax_main = ax[1, 0]
+ax_main.set_yscale("log")
+ax2 = ax_main.twinx()
+cbar = ax[1, 1]
 
 crop = (1584732263.0706418, 1584737752.138518)
 
@@ -48,17 +57,18 @@ slopes_all = slopes_all[slc]
 times_all = times_all[slc]
 k_extent_all = k_extent_all[slc]
 lims_all = lims_all[slc]
+print(crop[1] - crop[0])
 print(sum([len(a) for a in lims_all]))
 
 for i in range(len(start)):
-    ax[0].plot(
+    ax1.plot(
         fgm_time[start[i] : stop[i]],
         fgm[start[i] : stop[i], 3],
-        color=red,
+        color="k",
     )
 
 for i in range(len(slopes_all)):
-    ax2.imshow(
+    im = ax2.imshow(
         slopes_all[i].T,
         extent=(
             times_all[i][0],
@@ -96,30 +106,29 @@ for i in range(len(slopes_all)):
         # zorder=10,
         label=r"$1/d_e\approx1/\rho_e$",
     )
-y_axis_limits = 10 ** np.array(
-    [
-        k_extent_all[0][0],
-        k_extent_all[0][1],
-    ]
-)
-print(y_axis_limits)
-ax[1].set_ylim(y_axis_limits)
+y_axis_limits = 10 ** np.array([k_extent_all[0][0], k_extent_all[0][1]])
+plt.colorbar(im, cax=cbar)
+
+ax_main.set_ylim(y_axis_limits)
 ax2.set_ylim(np.log10(y_axis_limits))
-# ax[1].set_ylim(10 ** np.array(ax2.get_ylim()))
+# ax_main.set_ylim(10 ** np.array(ax2.get_ylim()))
 ax2.set_yticklabels([])
 ax2.set_ylabel("")
 
-ax[1].set_xlim(fgm_time[start[0]], fgm_time[stop[-1]])
+ax_main.set_xlim(fgm_time[start[0]], fgm_time[stop[-1]])
 
 labels = np.arange(int(fgm_time[start[0]]), int(fgm_time[stop[-1]]))
 labels = labels[labels % 600 == 0]
-ax[-1].set_xticks(labels)
 fmt = lambda x: dt.strftime(dt.utcfromtimestamp(x), "%H:%M")
-ax[-1].set_xticklabels([fmt(i) for i in labels])
-
-ax[0].set_ylabel("$|B|$ [$nT$]")
-ax[1].set_ylabel("$k$ [$km^{-1}$]")
-ax[-1].set_xlabel(
+for ax in [ax1, ax_main]:
+    ax_main.set_xticks(labels)
+ax_main.set_xticklabels([fmt(i) for i in labels])
+ax1.sharex(ax_main)
+ax_main.grid(False)
+ax2.grid(False)
+ax1.set_ylabel("$|B|$ [$nT$]")
+ax_main.set_ylabel("$k$ [$km^{-1}$]")
+ax_main.set_xlabel(
     f"Time UTC {dt.strftime(dt.utcfromtimestamp(fgm_time[0]), r'%d/%m/%Y')} (HH:MM)"
 )
 
@@ -129,5 +138,6 @@ ax2.legend(lns, labs, loc="upper left", fontsize=8)
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-plt.savefig(path("20200320_magSpec.pdf"), dpi=300)
+plt.savefig(path("20200320_slopes.pdf"), dpi=300)
+plt.savefig(path("20200320_slopes.png"), dpi=300)
 plt.show()

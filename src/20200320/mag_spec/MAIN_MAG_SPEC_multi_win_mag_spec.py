@@ -34,7 +34,7 @@ all_temp_e = np.load(fpi_path("data_tempperp_e.npy"))
 all_temp_e_time = np.load(fpi_path("time_tempperp_e.npy"))
 
 # SPACING = 9.5  # seconds of data for each window
-SPACING = 16
+SPACING = 45
 # td = all_b_time[1] - all_b_time[0]
 td = 1 / 8192
 
@@ -73,7 +73,6 @@ for burst in range(len(burst_start)):  # Loop over burst intervals
         for i in range(3):
             # log.info(f"index {i}")
             B = data[:, i] * 1e-9
-            print(len(B))
             # log.info("Scaling mean")
             B -= B.mean()
 
@@ -193,4 +192,5 @@ for burst in range(len(times_all)):
 ax[0].set_xlim((all_b_time[0], all_b_time[-1]))
 fig.colorbar(im, cax=ax[1])
 
+# plt.savefig(f"{get_path(__file__)}/{dt.}")
 plt.show()

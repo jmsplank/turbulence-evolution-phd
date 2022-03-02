@@ -114,7 +114,7 @@ ax[0].set_ylabel("$|B|$ [$nT$]")
 ax[1].set_ylabel("$B$ GSE\n[$nT$]")
 ax[2].set_ylabel("$v_i$ GSE\n[$kms^{-1}$]")
 ax[3].set_ylabel("$n_{i,e}$\n[$cm^{-3}$]")
-ax[4].set_ylabel("$E$ $[eV]$")
+ax[4].set_ylabel("$E_i$ $[eV]$")
 
 ax[-1].set_xlabel(f"20 Mar 2020")
 
@@ -129,9 +129,11 @@ ax[1].legend(loc="upper right", fontsize=8)
 ax[2].legend(loc="upper right", fontsize=8)
 ax[3].legend(loc="upper right", fontsize=8)
 
+ax[0].set_title("D")
+
 cbar = plt.colorbar(im, cax=ax2[-1])
 cbar.set_ticks([1e3, 1e5, 1e7])
-cbar.set_label("$E_i$\n$\left[\\frac{keV}{cm^2\, s\, sr\, keV}\\right]$")
+cbar.set_label("$DEF$\n$\left[\\frac{keV}{cm^2\, s\, sr\, keV}\\right]$")
 
 for i in range(len(ax2) - 1):
     ax2[i].axis("off")

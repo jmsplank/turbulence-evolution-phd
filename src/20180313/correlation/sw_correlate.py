@@ -39,6 +39,9 @@ for i in range(3):
 data = reg_data  # Rename
 time = reg_time
 
+data = data[(time > 2.554e4) & (time <= 5.827e4)]
+time = time[(time > 2.554e4) & (time <= 5.827e4)]
+
 td = time[1] - time[0]  # Generate new td (redundant)
 
 print(f"Spacing = {td:0.2E}s")
@@ -74,6 +77,16 @@ unco = lambda u: u[uncorrelated]
 corr_len = np.trapz(
     correlated[:uncorrelated], lags_di[:uncorrelated]
 )  # Integrate to get correlation length
+
+plt.figure(figsize=(6, 4))
+plt.plot(time - time[0], data, color="k")
+plt.xlabel("Time (s)")
+plt.ylabel("$|B|$ [nT]")
+plt.ylim((-10, 10))
+plt.tight_layout()
+plt.show()
+
+exit()
 
 fig, ax = plt.subplots()
 ax.axvline(

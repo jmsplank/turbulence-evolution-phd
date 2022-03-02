@@ -25,8 +25,8 @@ override_mpl.override("|krgb")
 
 save_path = new_path(get_path(__file__))
 data_path = new_path(get_path(__file__, ".."), "data")
-B = np.load(data_path("fgm/data.npy"))
-B_time = np.load(data_path("fgm/time.npy"))
+B = np.load(data_path("fsm/data.npy"))
+B_time = np.load(data_path("fsm/time.npy"))
 
 d_i_raw = np.load(save_path("d_i.npy"))
 d_i_time_raw = np.load(data_path("fpi/time_numberdensity_i.npy"))
@@ -73,7 +73,19 @@ DATA = data
 # Tmax = 40  # Maximum scale size in seconds
 # Fcrit = 1 / Tmax  # Critical frequency
 
-TmaxA = np.logspace(np.log10(0.5), np.log10((time[-1] - time[0]) / 2 - 1), 30)
+# TmaxA = np.logspace(np.log10(1), np.log10((time[-1] - time[0]) / 2 - 1), 30)
+# TmaxA = TmaxA.astype(int)
+# for i in range(1, len(TmaxA) - 1):
+# TmaxA[i] = TmaxA[i] if TmaxA[i] > TmaxA[i - 1] else TmaxA[i - 1] + 1
+# print(TmaxA)
+
+_y = np.logspace(np.log10(2), np.log10(len(time) / 4 - 1), 30)
+_y = _y.astype(int)
+for i in range(1, len(_y) - 1):
+    _y[i] = _y[i] if _y[i] > _y[i - 1] else _y[i - 1] + 1
+TmaxA = np.array([((time[-1] - time[0]) / i) for i in _y[::-1]])
+
+
 lambdas = {}
 lambdas_times = {}
 for Tmax in tqdm(TmaxA):
@@ -89,12 +101,9 @@ for Tmax in tqdm(TmaxA):
     for i in range(3):
         filt[:, i] = sosfilt(sos, DATA[:, i])
 
-    # print(f"{time.shape=}")
-    # print(f"{filt.shape=}")
-    # print(f"{d_i.shape=}")
-    # print(f"{vx_i.shape=}")
-
-    CHUNK_LEN = int(max(Tmax, (time[-1] - time[0]) / 30) // td)  # 60s in indices
+    # CHUNK_LEN = int(max(Tmax, (time[-1] - time[0]) / 30) // td)  # 60s in indices
+    # CHUNK_LEN = int((2 * Tmax) // td)
+    CHUNK_LEN = int(Tmax // td)
     chunk_start = np.arange(0, len(time) - CHUNK_LEN, CHUNK_LEN, dtype=int)
     corr_lens_di = np.empty_like(chunk_start, dtype=float)
     corr_lens_s = np.empty_like(chunk_start, dtype=float)
@@ -102,7 +111,7 @@ for Tmax in tqdm(TmaxA):
         # ctime = time[chunk : chunk + CHUNK_LEN]
         cdata = filt[chunk : chunk + CHUNK_LEN, :]
         d_i_chunk = d_i[chunk : chunk + CHUNK_LEN].mean()
-        v_i_chunk = vx_i[chunk : chunk + CHUNK_LEN].mean()
+        v_i_chunk = np.nanmean(vx_i[chunk : chunk + CHUNK_LEN])
 
         correlated = np.empty((cdata.shape[0] * 2 - 1, 3))
         for i in range(3):
@@ -142,19 +151,21 @@ ax[0, 1].axis("off")
 
 
 ##### ROW 2
-PLOT_MIN = np.min([lambdas[l].min() for l in lambdas.keys()])
+PLOT_MIN = np.min([lambdas[l][lambdas[l] > 0].min() for l in lambdas.keys()])
 PLOT_MAX = np.max([lambdas[l].max() for l in lambdas.keys()])
-
+print(f"{PLOT_MIN=} {PLOT_MAX=}")
 
 spacing = np.diff(np.log10(TmaxA))[0] / 2
 spacing = np.logspace(
-    np.log10(TmaxA[0] - spacing), np.log10(TmaxA[-1] + spacing), TmaxA.size + 1
+    np.log10(TmaxA[0]) - spacing, np.log10(TmaxA[-1]) + spacing, TmaxA.size + 1
 )
-Lspacing = [np.diff(t)[0] for _, t in lambdas_times.items()]
+Lspacing = [abs(t[1] - t[0]) for _, t in lambdas_times.items()]
 Lspacing = [
-    np.linspace(t[0] - Lspacing[i], t[-1] + Lspacing[i], t.size + 1)
+    np.linspace(t[0] - Lspacing[i] / 2, t[-1] + Lspacing[i] / 2, t.size + 1)
     for i, (_, t) in enumerate(lambdas_times.items())
 ]
+# print([l[0] - time[0] for l in Lspacing])
+# print([sum(np.isnan(L)) for L in spacing])
 for i, T in enumerate(TmaxA):
     # Stack colormesh rows
     im = ax[1, 0].pcolormesh(
@@ -166,7 +177,6 @@ for i, T in enumerate(TmaxA):
             vmax=PLOT_MAX,
         ),
     )
-plt.colorbar(im, cax=ax[1, 1])
 
 
 ##### GEN CONTOUR DATA
@@ -186,14 +196,17 @@ Z[Z <= 0] = np.min(Z[Z > 0])
 tri = Triangulation(X, Y)
 refiner = UniformTriRefiner(tri)
 tri_refi, Z_refi = refiner.refine_field(Z, subdiv=3)
-im = ax[1, 0].tricontour(
+contour = ax[1, 0].tricontour(
     tri_refi,
     Z_refi,
     levels=np.logspace(np.log10(PLOT_MIN), np.log10(PLOT_MAX), 15),
     linewidths=np.array([2.0, 0.5, 1.0, 0.5]) / 2,
     colors="k",
+    norm=LogNorm(),
 )
-plt.colorbar(im, ax[1, 1], label="$\lambda_c\quad[d_i]$")
+
+# cbar = plt.colorbar(contour, ax[1, 1], label="$\lambda_c\quad[d_i]$")
+cbar = plt.colorbar(im, cax=ax[1, 1], label="$\lambda_c\quad[d_i]$")
 
 ax[1, 0].set_yscale("log")
 ax[1, 0].set_xlim((time[0], time[-1]))
@@ -208,5 +221,6 @@ ax[0, 0].set_ylabel("$|B|\quad[nT]$")
 plt.setp(ax[0, 0].get_xticklabels(), visible=False)
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-plt.savefig(save_path("pcolormesh.png"), dpi=300)
+plt.savefig(save_path(f"{dt.utcfromtimestamp(time[0]):%Y%m%d}_corr.png"), dpi=300)
+plt.savefig(save_path(f"{dt.utcfromtimestamp(time[0]):%Y%m%d}_corr.pdf"), dpi=300)
 plt.show()

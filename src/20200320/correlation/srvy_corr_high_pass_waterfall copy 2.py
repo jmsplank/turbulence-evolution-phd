@@ -176,7 +176,7 @@ sm = plt.cm.ScalarMappable(
 
 vals_to_plot = list(lambdas.keys())
 shuffle(vals_to_plot)
-vals_to_plot = vals_to_plot[::7]
+vals_to_plot = vals_to_plot[::]
 
 for i, k in enumerate(vals_to_plot):
     ax1.scatter(
@@ -218,8 +218,8 @@ for i, k in enumerate(vals_to_plot):
 ax2.set_xlabel(r"$|v_x|\quad[km\,s^{-1}]$")
 ax2.set_ylabel("$\lambda_c\quad[d_i]$")
 
-for ax in [ax1, ax2]:
-    ax.set_yscale("log")
+# for ax in [ax1, ax2]:
+# ax.set_yscale("log")
 
 plt.tight_layout()
 plt.savefig(save_path("correlation_statsmadness.pdf"), dpi=300)
