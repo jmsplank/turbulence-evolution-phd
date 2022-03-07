@@ -10,12 +10,14 @@ from datetime import datetime as dt
 from scipy.interpolate import interp1d
 from scipy.signal import butter, sosfilt, welch
 from tqdm import tqdm
-from scipy.signal import correlate, correlation_lags
+from scipy.signal import correlate, correlation_lags, resample
+from scipy.spatial import Delaunay
 import warnings
 import json
 from phdhelper.physics import lengths
 from matplotlib.colors import LogNorm
-from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
+from matplotlib.tri import Triangulation, UniformTriRefiner, TriAnalyzer
+import warnings
 
 # mpl.rcParams["agg.path.chunksize"] = 1000
 override_mpl.override("|krgb")
@@ -79,12 +81,12 @@ DATA = data
 # TmaxA[i] = TmaxA[i] if TmaxA[i] > TmaxA[i - 1] else TmaxA[i - 1] + 1
 # print(TmaxA)
 
-_y = np.logspace(np.log10(2), np.log10(len(time) / 4 - 1), 30)
+_y = np.logspace(np.log10(2), np.log10(len(time) / 15 - 1), 30)
 _y = _y.astype(int)
 for i in range(1, len(_y) - 1):
     _y[i] = _y[i] if _y[i] > _y[i - 1] else _y[i - 1] + 1
 TmaxA = np.array([((time[-1] - time[0]) / i) for i in _y[::-1]])
-
+print(TmaxA[0], TmaxA[-1])
 
 lambdas = {}
 lambdas_times = {}
@@ -141,7 +143,12 @@ for Tmax in tqdm(TmaxA):
 
 
 ##### PLOTTING
-fig, ax = plt.subplots(2, 2, gridspec_kw={"width_ratios": [97, 3]})
+fig, ax = plt.subplots(
+    2,
+    2,
+    gridspec_kw={"width_ratios": [97, 3], "height_ratios": [20, 80]},
+    figsize=(7, 4),
+)
 
 ax[0, 0].sharex(ax[1, 0])
 
@@ -164,49 +171,123 @@ Lspacing = [
     np.linspace(t[0] - Lspacing[i] / 2, t[-1] + Lspacing[i] / 2, t.size + 1)
     for i, (_, t) in enumerate(lambdas_times.items())
 ]
-# print([l[0] - time[0] for l in Lspacing])
-# print([sum(np.isnan(L)) for L in spacing])
+
 for i, T in enumerate(TmaxA):
     # Stack colormesh rows
     im = ax[1, 0].pcolormesh(
         Lspacing[i],
-        [spacing[i], spacing[i + 1]],
+        [spacing[i], (spacing[i] + spacing[i + 1]) / 2, spacing[i + 1]],
         np.column_stack([lambdas[T], lambdas[T]]).T,
         norm=LogNorm(
             vmin=PLOT_MIN,
             vmax=PLOT_MAX,
         ),
     )
+c_bar = plt.colorbar(im, cax=ax[1, 1])
+c_bar.ax.set_ylabel("$\lambda_c\quad[d_i]$")
 
 
 ##### GEN CONTOUR DATA
 X = []
 Y = []
 Z = []
+
+print([len(lambdas_times[l]) for l in list(lambdas_times.keys())])
+
+max_bins = 30
 for i in range(len(TmaxA)):
-    X.extend(lambdas_times[TmaxA[i]])
-    Y.extend(np.zeros(lambdas_times[TmaxA[i]].size) + TmaxA[i])
-    Z.extend(lambdas[TmaxA[i]])
-X = np.array(X)
-Y = np.array(Y)
-Z = np.array(Z)
-Z[Z <= 0] = np.min(Z[Z > 0])
+    tmax = TmaxA[i]
+    lt = lambdas_times[TmaxA[i]]
+    amount = lt.size
+    # Z_data = lambdas[tmax]
+    Z_data = np.random.normal(10, 1, amount)
+    # print(Z_data.shape)
+    if amount <= max_bins:
+        X.extend(lt)
+        Y.extend(np.zeros(amount) + tmax)
+        Z.extend(Z_data)
+    else:
+        newX = np.linspace(lt[0], lt[-1], max_bins)
+        X.extend(newX)
+        Y.extend(np.zeros(max_bins) + tmax)
+        bins_len = int(amount // max_bins)
+        if Z_data.size % max_bins != 0:
+            Z_mini = np.pad(
+                Z_data.astype(float),
+                (0, max_bins - Z_data.size % max_bins),
+                mode="constant",
+                constant_values=np.NaN,
+            ).reshape(max_bins, -1)
+            # print(f"if {Z_mini.shape}")
+        else:
+            Z_mini = Z_data.reshape(-1, bins_len)
+            # print(f"else {Z_mini.shape}")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            Z_mean = np.nanmean(Z_mini, axis=1)
+        Z.extend(Z_mean)
+
+# np.save("/Users/jamesplank/Downloads/temp/lambdas.npy", lambdas, allow_pickle=True)
+# np.save(
+#     "/Users/jamesplank/Downloads/temp/lambdas_times.npy",
+#     lambdas_times,
+#     allow_pickle=True,
+# )
+# np.save("/Users/jamesplank/Downloads/temp/tmaxs.npy", TmaxA, allow_pickle=True)
 
 ##### CONTOURS
-tri = Triangulation(X, Y)
-refiner = UniformTriRefiner(tri)
-tri_refi, Z_refi = refiner.refine_field(Z, subdiv=3)
-contour = ax[1, 0].tricontour(
-    tri_refi,
-    Z_refi,
-    levels=np.logspace(np.log10(PLOT_MIN), np.log10(PLOT_MAX), 15),
-    linewidths=np.array([2.0, 0.5, 1.0, 0.5]) / 2,
-    colors="k",
-    norm=LogNorm(),
-)
 
-# cbar = plt.colorbar(contour, ax[1, 1], label="$\lambda_c\quad[d_i]$")
-cbar = plt.colorbar(im, cax=ax[1, 1], label="$\lambda_c\quad[d_i]$")
+# Create some regular spacings
+X = lambdas_times[TmaxA[20]]  # Choose an X spacing
+X2, Y2 = np.meshgrid(X, TmaxA)
+
+# Interpolate lambdas into regular grid
+lambdas_regular = np.zeros(X2.shape)
+for i in range(len(TmaxA)):
+    lambdas_regular[i, :] = np.interp(X, lambdas_times[TmaxA[i]], lambdas[TmaxA[i]])
+
+# Correction for log(lambda<=0)
+# for T in TmaxA:
+#     lambdas[T][lambdas[T] <= 0] = min(lambdas[T][lambdas[T] > 0])
+
+# Generate triangulation on sampled grid
+tri = Triangulation(X2.flatten(), np.log10(Y2).flatten())
+# Refine grid to smooth out contours
+UTR = UniformTriRefiner(tri)
+tri_refi, lambda_refi = UTR.refine_field(np.log10(lambdas_regular).flatten(), subdiv=4)
+
+# Contour levels
+c_min, c_max = -2, 2.1
+c_lev = np.arange(c_min, c_max, 0.5)
+c_lev_2 = np.arange(c_min, c_max, 1 / 8)
+
+# Generate false vertical axis to plot contours
+ax_contour = ax[1, 0].twinx()
+ax_contour.set_yticks([])
+ax_contour.set_yticklabels([])
+
+# Plot smoothed contours
+ax_contour.tricontour(
+    tri_refi,
+    lambda_refi,
+    colors="k",
+    levels=c_lev,
+    linewidths=1,
+    linestyles="solid",
+    vmin=c_min,
+    vmax=c_max,
+)
+ax_contour.tricontour(
+    tri_refi,
+    lambda_refi,
+    colors="k",
+    levels=c_lev_2,
+    linewidths=1,
+    linestyles="dashed",
+    alpha=0.2,
+    vmin=c_min,
+    vmax=c_max,
+)
 
 ax[1, 0].set_yscale("log")
 ax[1, 0].set_xlim((time[0], time[-1]))
