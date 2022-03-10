@@ -373,6 +373,32 @@ ax_main = ax[1, 0]
 cbar_main = ax[1, 1]
 ax[0, 1].axis("off")
 
+# Colouring in the regions
+with open(f"{dirpath}/summary.json", "r") as file:
+    summary = json.load(file)
+regions = summary["sections"]["timestamp"]
+regions = np.concatenate(([big_time[0]], regions, [big_time[-1]]))
+print(f"{regions=}")
+regions_labels = summary["sections"]["label"]
+y_ax1 = max(np.linalg.norm(big_data, axis=1))
+ax1.set_ylim((0, y_ax1 * 1.3))
+for reg in range(len(regions) - 1):
+    ax1.axvspan(
+        regions[reg],
+        regions[reg + 1],
+        facecolor=[red, green, blue, mandarin][reg],
+        alpha=0.3,
+        edgecolor="none",
+    )
+    ax1.text(
+        (regions[reg] + regions[reg + 1]) / 2,
+        y_ax1 * 1.125,
+        regions_labels[reg],
+        color="k",
+        horizontalalignment="center",
+        verticalalignment="center",
+    )
+
 ax1.plot(big_time, np.linalg.norm(big_data, axis=1))
 
 X = np.linspace(big_time[0], big_time[bin_starts[-1] + bin_size], len(bin_starts) + 1)

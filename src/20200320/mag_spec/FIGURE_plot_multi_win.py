@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from phdhelper.helpers import override_mpl
 from phdhelper.helpers.os_shortcuts import get_path, new_path
-from phdhelper.helpers.COLOURS import red
+from phdhelper.helpers.COLOURS import mandarin, blue, green
 import json
 from datetime import datetime as dt
 
@@ -59,6 +59,30 @@ k_extent_all = k_extent_all[slc]
 lims_all = lims_all[slc]
 print(crop[1] - crop[0])
 print(sum([len(a) for a in lims_all]))
+
+# Colouring in the regions
+regions = summary["sections"]["timestamp"]
+regions = np.concatenate(([crop[0]], regions, [crop[1]]))
+print(f"{regions=}")
+regions_labels = summary["sections"]["label"]
+y_ax1 = max(fgm[start[0] : stop[-1], 3])
+ax1.set_ylim((0, y_ax1 * 1.3))
+for reg in range(len(regions) - 1):
+    ax1.axvspan(
+        regions[reg],
+        regions[reg + 1],
+        facecolor=[mandarin, blue, green][reg],
+        alpha=0.3,
+        edgecolor="none",
+    )
+    ax1.text(
+        (regions[reg] + regions[reg + 1]) / 2,
+        y_ax1 * 1.125,
+        regions_labels[reg],
+        color="k",
+        horizontalalignment="center",
+        verticalalignment="center",
+    )
 
 for i in range(len(start)):
     ax1.plot(
