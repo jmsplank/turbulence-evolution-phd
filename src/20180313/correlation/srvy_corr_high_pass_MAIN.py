@@ -238,7 +238,9 @@ for i in range(len(TmaxA)):
 ##### CONTOURS
 
 # Create some regular spacings
-X = lambdas_times[TmaxA[20]]  # Choose an X spacing
+contour_tmax = TmaxA[24]
+print(f"{contour_tmax=}")
+X = lambdas_times[contour_tmax]  # Choose an X spacing
 X2, Y2 = np.meshgrid(X, TmaxA)
 
 # Interpolate lambdas into regular grid
@@ -267,7 +269,7 @@ ax_contour.set_yticks([])
 ax_contour.set_yticklabels([])
 
 # Plot smoothed contours
-ax_contour.tricontour(
+contour = ax_contour.tricontour(
     tri_refi,
     lambda_refi,
     colors="k",
@@ -288,6 +290,46 @@ ax_contour.tricontour(
     vmin=c_min,
     vmax=c_max,
 )
+
+
+def contour_label_format(x):
+    x_round = round(10 ** x, -int(np.floor(x)))
+    out = str(x_round)
+    if out.endswith(".0"):
+        out = f"{x_round:.0f}"
+    return out
+
+
+contour_locations = [  # Hardcoded from manual placement below
+    (1520916397.786545991897583, 2.295294851682848),
+    (1520916411.613332271575928, 1.351340978541526),
+    (1520916418.864101648330688, 0.447264001083524),
+    (1520916421.121103763580322, 0.025153111758285),
+    (1520916440.079855442047119, -0.539759589319845),
+    (1520916936.243319988250732, 2.422012070280223),
+    (1520916837.489000320434570, 2.074224920841922),
+    (1520916916.489352226257324, -0.606936337650326),
+]
+contour_labels = ax_contour.clabel(
+    contour,
+    contour.levels,
+    inline=True,
+    fontsize=10,
+    fmt=contour_label_format,
+    manual=contour_locations,
+    inline_spacing=2,
+)
+
+################## Print contour locations from manual placement
+################## Set manual=True in clabel
+# manual = [
+#     ax_contour.transData.inverted().transform(a.get_window_extent())
+#     for a in contour_labels
+# ]
+# manual = [((a[0, 0] + a[1, 0]) / 2, (a[0, 1] + a[1, 1]) / 2) for a in manual]
+# nl = ",\n"
+# print(f"[{nl.join([f'({a[0]:.15f}, {a[1]:.15f})' for a in manual])}]")
+
 
 ax[1, 0].set_yscale("log")
 ax[1, 0].set_xlim((time[0], time[-1]))

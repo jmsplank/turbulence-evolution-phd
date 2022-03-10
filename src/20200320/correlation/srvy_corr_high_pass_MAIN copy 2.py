@@ -203,7 +203,9 @@ c_bar.ax.set_ylabel("$\lambda_c\quad[d_i]$")
 # contours from sampled data
 
 # Create some regular spacings
-X = lambdas_times[TmaxA[24]]  # Choose an X spacing
+contour_tmax = TmaxA[24]
+print(f"{contour_tmax=}")
+X = lambdas_times[contour_tmax]  # Choose an X spacing
 X2, Y2 = np.meshgrid(X, TmaxA)
 
 # Interpolate lambdas into regular grid
@@ -223,7 +225,7 @@ c_lev = np.arange(c_min, c_max, 0.5)
 c_lev_2 = np.arange(c_min, c_max, 1 / 8)
 
 # Plot smoothed contours
-ax_contour.tricontour(  # Main solid
+contour = ax_contour.tricontour(  # Main solid
     tri_refi,
     lambda_refi,
     colors="k",
@@ -244,6 +246,72 @@ ax_contour.tricontour(  # Secondary dashed
     vmin=c_min,
     vmax=c_max,
 )
+
+# Label each contour line
+
+
+def contour_label_format(x: float) -> str:
+    """10**x to 1 sf"""
+    x_round = round(10 ** x, -int(np.floor(x)))
+    out = str(x_round)
+    if out.endswith(".0"):
+        out = f"{x_round:.0f}"
+    return out
+
+
+contour_locations = [  # Hardcoded from manual placement below
+    (1584733262.440246105194092, 2.795941599558844),
+    (1584735631.467354297637939, 1.819624292192747),
+    (1584736705.763304471969604, 2.303135695173462),
+    (1584736709.089214801788330, 1.626816534488034),
+    (1584736727.528309822082520, 0.668507770372706),
+    (1584736760.560099363327026, 0.085526320937969),
+    (1584736754.635787248611450, -0.535316014007753),
+    (1584735652.367965221405029, -0.640359757932140),
+    (1584735597.694380044937134, 0.482253021424726),
+    (1584733259.509083032608032, 0.005542409745160),
+    (1584733134.890337228775024, -0.730331609371607),
+    (1584733046.388900756835938, -0.423623021046340),
+    (1584733026.137163400650024, 0.785320589673588),
+    (1584733077.642794609069824, 1.176753544636858),
+    (1584732759.944273948669434, 2.992697655793984),
+    (1584734895.267157554626465, 2.866484520539285),
+    (1584735635.356348276138306, 2.928838839872026),
+    (1584735689.566944837570190, 3.228026889720540),
+    (1584736649.989908933639526, 3.249714121442441),
+    (1584734879.944611787796021, 1.969630698168176),
+    (1584734157.677162647247314, 2.273809911538260),
+    (1584736183.916390895843506, 2.050617355905332),
+    (1584735699.087667465209961, 0.856487713082687),
+    (1584735577.975579261779785, 1.211006793330445),
+    (1584734874.305974483489990, 0.160831026582827),
+    (1584734889.780920267105103, 1.038411629959829),
+    (1584734885.974493503570557, 1.305775370022114),
+    (1584734863.079505920410156, -0.145042137634490),
+    (1584734870.773158073425293, -0.577136520466164),
+]
+
+# Generate / Place labels on contours
+contour_labels = ax_contour.clabel(
+    contour,
+    contour.levels,
+    inline=True,
+    fontsize=10,
+    fmt=contour_label_format,
+    manual=contour_locations,  # Change to True & uncomment below to reset
+    inline_spacing=2,
+)
+
+################## Print contour locations from manual placement
+################## Set manual=True in clabel
+# manual = [
+#     ax_contour.transData.inverted().transform(a.get_window_extent())
+#     for a in contour_labels
+# ]
+# manual = [((a[0, 0] + a[1, 0]) / 2, (a[0, 1] + a[1, 1]) / 2) for a in manual]
+# nl = ",\n"
+# print(f"[{nl.join([f'({a[0]:.15f}, {a[1]:.15f})' for a in manual])}]")
+
 
 # Cover missing data
 y0 = ax[0, 0].get_ylim()
