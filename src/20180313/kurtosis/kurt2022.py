@@ -10,6 +10,7 @@ from phdhelper.helpers.os_shortcuts import get_path, new_path
 from scipy.interpolate import interp1d
 from scipy.stats import gaussian_kde, kurtosis, norm
 from tqdm import tqdm
+import json
 
 override_mpl.override()
 override_mpl.cmaps("custom_diverging")
@@ -71,6 +72,19 @@ for i, bin in enumerate(tqdm(bin_starts)):  # Loop over windows
     )
     kurt[i] = kurtosis(data_norm, fisher=False)  # calculate indep. kurtosis
 
+with open(f"{path2}/summary.json", "r") as file:
+    summary = json.load(file)
+shock = summary["shock"]["timestamp"]
+pre_shock = kurt[bin_times > shock]
+post_shock = kurt[bin_times <= shock]
+print("-" * 50)
+print("Percentage of bins where intermittency present:")
+print(f"pre-shock:  {len(pre_shock[pre_shock>3])/len(pre_shock)*100:.1f}%")
+print(f"post-shock: {len(post_shock[post_shock>3])/len(post_shock)*100:.1f}%")
+print("-" * 50)
+print(f"Shock is at {dt.strftime(dt.utcfromtimestamp(shock), '%H:%M:%S')}")
+print("-" * 50)
+
 
 fig, ax = plt.subplots(
     1,
@@ -126,8 +140,8 @@ ax2.set_xticklabels([f"{dt.utcfromtimestamp(a):%H:%M}" for a in ax2.get_xticks()
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-plt.savefig(f"{path}/{dt.utcfromtimestamp(big_time[0]):%Y%m%d}_kurt.png", dpi=300)
-plt.savefig(f"{path}/{dt.utcfromtimestamp(big_time[0]):%Y%m%d}_kurt.pdf", dpi=300)
+# plt.savefig(f"{path}/{dt.utcfromtimestamp(big_time[0]):%Y%m%d}_kurt.png", dpi=300)
+# plt.savefig(f"{path}/{dt.utcfromtimestamp(big_time[0]):%Y%m%d}_kurt.pdf", dpi=300)
 plt.show()
 
 exit()

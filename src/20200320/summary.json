@@ -32,5 +32,8 @@
   "sections": {
     "label": ["FS/SW", "STR", "DS"],
     "timestamp": [1584735999, 1584736664]
+  },
+  "shock": {
+    "timestamp": 1584736526
   }
 }

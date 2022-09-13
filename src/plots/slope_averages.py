@@ -1,11 +1,12 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from phdhelper.helpers import os_shortcuts, override_mpl
-from phdhelper.helpers.CONSTANTS import R_e
-from phdhelper.helpers.COLOURS import red, green, blue, mandarin
-from os.path import join
 import json
+from os.path import join
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pybowshock as pybs
+from phdhelper.helpers import os_shortcuts, override_mpl
+from phdhelper.helpers.COLOURS import blue, green, mandarin, red
+from phdhelper.helpers.CONSTANTS import R_e
 
 override_mpl.override()
 
@@ -14,13 +15,13 @@ path_13 = gen_path("20180313")
 path_16 = gen_path("20180316")
 path_18 = gen_path("20200318")
 
-fig, ax = plt.subplots(2, 1, sharex=True, figsize=(6, 4))
-# ax = [ax]
+fig, ax = plt.subplots(1, 1, sharex=True, figsize=(6, 4))
+ax = [ax]
 
-for i, path in enumerate([path_16, path_18]):
+for i, path in enumerate([path_18]):
     slopes = np.load(path("mag_spec/slope_interp.npy"))
     k = np.load(path("mag_spec/x_interp.npy"))
-    k = 10 ** k
+    k = 10**k
     with open(path("summary.json"), "r") as file:
         summary = json.load(file)
 
@@ -49,7 +50,7 @@ for i, path in enumerate([path_16, path_18]):
             k,
             slope.mean(axis=0) - (slope.std(axis=0) / np.sqrt(length)),
             slope.mean(axis=0) + (slope.std(axis=0) / np.sqrt(length)),
-            color=[red, green, blue, mandarin][4 - (len(sections) - 1) :][region],
+            color=[green, blue, mandarin][region],
             alpha=0.2,
             lw=0,
             step="mid",
@@ -78,13 +79,13 @@ for i, path in enumerate([path_16, path_18]):
     )
     rhod = ax[i].axvline(
         10 ** [-0.15, -0.25][i],
-        ls="-",
+        ls=":",
         label=r"$1/d_e\approx1/\rho_e$",
         color="k",
     )
 
     ax[i].set_xscale("log")
-    # ax[i].legend(loc="lower left", fontsize=6)
+    ax[i].legend(loc="lower left", fontsize=6)
     ax[i].set_ylabel(rf"Slope ($\theta_{{Bn}}={summary['theta_Bn']:02.0f}^\circ$)")
     ax[i].grid(False)
     ax[i].set_ylim((-7.8, 0.5))
@@ -94,5 +95,6 @@ ax[-1].set_xlabel("$k$ $[km^{-1}]$")
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-plt.savefig(gen_path("plots")("Appendix_slope_avg.pdf"))
+print(path("").split("/")[-2])
+plt.savefig(gen_path("plots")(f"{path('').split('/')[-2]}_slope_avg.png"))
 plt.show()

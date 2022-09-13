@@ -1,23 +1,22 @@
 import enum
+import json
+import warnings
+from datetime import datetime as dt
 from re import L
-import numpy as np
-import matplotlib.pyplot as plt
+
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+from master import Event
+from matplotlib.colors import LogNorm
+from matplotlib.tri import TriAnalyzer, Triangulation, UniformTriRefiner
 from phdhelper.helpers import override_mpl
 from phdhelper.helpers.os_shortcuts import get_path, new_path
-from master import Event
-from datetime import datetime as dt
-from scipy.interpolate import interp1d
-from scipy.signal import butter, sosfilt, welch
-from tqdm import tqdm
-from scipy.signal import correlate, correlation_lags, resample
-from scipy.spatial import Delaunay
-import warnings
-import json
 from phdhelper.physics import lengths
-from matplotlib.colors import LogNorm
-from matplotlib.tri import Triangulation, UniformTriRefiner, TriAnalyzer
-import warnings
+from scipy.interpolate import interp1d
+from scipy.signal import butter, correlate, correlation_lags, resample, sosfilt, welch
+from scipy.spatial import Delaunay
+from tqdm import tqdm
 
 # mpl.rcParams["agg.path.chunksize"] = 1000
 override_mpl.override("|krgb")
@@ -238,7 +237,7 @@ for i in range(len(TmaxA)):
 ##### CONTOURS
 
 # Create some regular spacings
-contour_tmax = TmaxA[24]
+contour_tmax = TmaxA[20]
 print(f"{contour_tmax=}")
 X = lambdas_times[contour_tmax]  # Choose an X spacing
 X2, Y2 = np.meshgrid(X, TmaxA)
@@ -293,7 +292,7 @@ ax_contour.tricontour(
 
 
 def contour_label_format(x):
-    x_round = round(10 ** x, -int(np.floor(x)))
+    x_round = round(10**x, -int(np.floor(x)))
     out = str(x_round)
     if out.endswith(".0"):
         out = f"{x_round:.0f}"

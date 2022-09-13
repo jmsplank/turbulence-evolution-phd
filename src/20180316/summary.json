@@ -16,6 +16,6 @@
   "SW": { "timestamp": 1521165275 },
   "sections": {
     "timestamp": [1521164583, 1521165274],
-    "label": ["DS 1", "STR", "SW"]
+    "label": ["DS", "STR", "SW"]
   }
 }

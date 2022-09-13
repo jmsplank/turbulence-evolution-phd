@@ -58,7 +58,7 @@ for i, reg in enumerate([FS, STR, DS]):
     )
 plt.axvline(10 ** -2.5, ls="-.", label=r"$1/\rho_i$", color="k")
 plt.axvline(10 ** -1.9, ls="--", label=r"$1/d_i$", color="k")
-plt.axvline(10 ** -0.3, ls="-", label=r"$1/d_e\approx1/\rho_e$", color="k")
+plt.axvline(10 ** -0.3, ls=":", label=r"$1/d_e\approx1/\rho_e$", color="k")
 plt.ylabel(rf"Slope ($\theta_{{Bn}}=17^\circ$)")
 plt.xlabel("$k$ $[km^{-1}]$")
 plt.legend(loc="lower left", fontsize=8)
